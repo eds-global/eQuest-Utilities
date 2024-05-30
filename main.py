@@ -125,7 +125,7 @@ def main():
         uploaded_inp_file = st.file_uploader("Upload an INP file", type="inp", accept_multiple_files=False)
         uploaded_sim_file = st.file_uploader("Upload a SIM file", type="sim", accept_multiple_files=False)
         input_climate = st.selectbox("Enter the Climate Zone", options=[1, 2, 3, 4, 5, 6, 7, 8])
-        input_building_type = st.selectbox("Enter the Building Type", options=[0, 1])
+        input_building_type = st.selectbox("Enter the Building Type (0 - Resdential), (1 - Non-Residential)", options=[0, 1])
         input_area = st.number_input("Enter area", min_value=0.0, step=0.1)
         number_floor = st.number_input("Enter floor number", min_value=0, step=1)
         heat_type = st.selectbox("Enter Heating Type", options=[0, 1])
