@@ -1,5 +1,7 @@
 import pandas as pd
 import re
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 def preprocess_activity_desc(activity_desc):
     # Remove asterisks, extra spaces, and equals sign
@@ -9,6 +11,14 @@ def preprocess_database_space_type(space_type):
     # Remove leading/trailing spaces and convert to lowercase
     return space_type.strip().lower()
 
+def find_best_match(activity_desc, database):
+    # Use fuzzy matching to find the best match in the database
+    activity_desc_lower = activity_desc.lower()
+    # Ensure all entries in 'Activity Description_eQUEST' are strings and handle NaN values
+    choices = database['Activity Description_eQUEST'].fillna('').astype(str).tolist()
+    best_match, score = process.extractOne(activity_desc_lower, choices, scorer=fuzz.partial_ratio)
+    return best_match if score >= 80 else None  # Threshold can be adjusted
+
 def updateLPD(inp_data, sim_data):
     # Define markers to identify the section of interest
     start_marker = "Floors / Spaces / Walls / Windows / Doors"
@@ -17,8 +27,8 @@ def updateLPD(inp_data, sim_data):
     # Load database
     database = pd.read_csv("database/eQUEST_database.csv")
 
-    # Preprocess database space type column
-    database['Space type'] = database['Space type'].str.strip().str.lower()
+    # Preprocess database Activity Description_eQUEST type column
+    database['Activity Description_eQUEST'] = database['Activity Description_eQUEST'].str.strip().str.lower()
 
     # Finding start and end indices in data
     start_index = None
@@ -51,21 +61,19 @@ def updateLPD(inp_data, sim_data):
 
             # If C-ACTIVITY-DESC is found
             if activity_desc:
-                # print(f"Extracted Activity Desc: {activity_desc}")
-                # Check if the value is in the database
-                activity_desc_lower = activity_desc.lower()
-                matches = database[database['Space type'] == activity_desc_lower]
-                if not matches.empty:
+                # Find the best match using fuzzy matching
+                best_match = find_best_match(activity_desc, database)
+                if best_match:
                     # Get corresponding LPD value
-                    lpd_value = matches.iloc[0]['Lighting Power density (W/sqft)']
-                    # print(f"LPD Value from Database: {lpd_value}")
-                    # Update LIGHTING-W/AREA only if it is found after the C-ACTIVITY-DESC line
-                    for j in range(k, len(inp_data)):
-                        if inp_data[j].strip().startswith("LIGHTING-W/AREA"):
-                            inp_data[j] = f"   LIGHTING-W/AREA = ( {lpd_value} )" + "\n"  # Update LPD value
-                            # print(f"Updated LIGHTING-W/AREA: {lpd_value}")
-                            break
-                        elif inp_data[j].startswith(".."):  # Break loop if a new section starts
-                            break
+                    matches = database[database['Activity Description_eQUEST'] == best_match]
+                    if not matches.empty:
+                        lpd_value = matches.iloc[0]['Lighting Power density (W/sqft)']
+                        # Update LIGHTING-W/AREA only if it is found after the C-ACTIVITY-DESC line
+                        for j in range(k, len(inp_data)):
+                            if inp_data[j].strip().startswith("LIGHTING-W/AREA"):
+                                inp_data[j] = f"   LIGHTING-W/AREA = ( {lpd_value} )" + "\n"  # Update LPD value
+                                break
+                            elif inp_data[j].startswith(".."):  # Break loop if a new section starts
+                                break
 
     return inp_data

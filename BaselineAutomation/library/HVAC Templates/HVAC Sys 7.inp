@@ -1,0 +1,190 @@
+$ ---------------------------------------------------------
+$              Pumps
+$ ---------------------------------------------------------
+
+"Seconday PUMP" = PUMP            
+   FLOW-RATIO       = 1.1
+   HEAD             = 44
+   HEAD-RATIO       = 1.1
+   MECH-EFF         = 0.67
+   MOTOR-EFF        = 0.91
+   CAP-CTRL         = VAR-SPEED-PUMP
+   MIN-SPEED        = 0.3
+   ..
+"Primary Pump" = PUMP            
+   HEAD             = 31
+   MECH-EFF         = 0.67
+   MOTOR-EFF        = 0.91
+   CAP-CTRL         = ONE-SPEED-PUMP
+   ..
+"CW Pump" = PUMP            
+   HEAD             = 60
+   MECH-EFF         = 0.64
+   MOTOR-EFF        = 0.91
+   ..
+"HW-PUMP" = PUMP            
+   FLOW-RATIO       = 1.1
+   HEAD             = 60
+   HEAD-RATIO       = 1.1
+   MECH-EFF         = 0.64
+   MOTOR-EFF        = 0.91
+   CAP-CTRL         = ONE-SPEED-PUMP
+   ..
+
+
+$ ---------------------------------------------------------
+$              Heat Exchangers
+$ ---------------------------------------------------------
+
+
+
+$ ---------------------------------------------------------
+$              Circulation Loops
+$ ---------------------------------------------------------
+
+"SYSTEM1,5,7-HW" = CIRCULATION-LOOP
+   TYPE             = HW
+   LOOP-DESIGN-DT   = 50
+   HEAT-SETPT-CTRL  = OA-RESET
+   HEAT-RESET-SCH   = "HW Reset Temp Ann"
+   ..
+"SYSTEM8-CHW" = CIRCULATION-LOOP
+   TYPE             = CHW
+   COOL-SETPT-CTRL  = OA-RESET
+   COOL-RESET-SCH   = "ChW Reset Temp Ann"
+   LOOP-PUMP        = "Seconday PUMP"
+   ..
+"DEFAULT-CW" = CIRCULATION-LOOP
+   LIBRARY-ENTRY "DEFAULT-CW"
+   ..
+
+
+$ ---------------------------------------------------------
+$              Chillers
+$ ---------------------------------------------------------
+
+"Chiller 1" = CHILLER         
+   TYPE             = ELEC-HERM-CENT
+   ELEC-INPUT-RATIO = 0.1639
+   CHW-LOOP         = "SYSTEM8-CHW"
+   CHW-PUMP         = "Primary Pump"
+   CONDENSER-TYPE   = WATER-COOLED
+   CW-LOOP          = "DEFAULT-CW"
+   CW-PUMP          = "CW Pump"
+   ..
+
+
+$ ---------------------------------------------------------
+$              Boilers
+$ ---------------------------------------------------------
+
+"SYSTEM 1 BOILER" = BOILER          
+   TYPE             = HW-BOILER
+   HEAT-INPUT-RATIO = 1.25
+   HW-LOOP          = "SYSTEM1,5,7-HW"
+   HW-PUMP          = "HW-PUMP"
+   ..
+
+
+$ ---------------------------------------------------------
+$              Domestic Water Heaters
+$ ---------------------------------------------------------
+
+
+
+$ ---------------------------------------------------------
+$              Heat Rejection
+$ ---------------------------------------------------------
+
+"Heat Rejection 1" = HEAT-REJECTION  
+   TYPE             = OPEN-TWR
+   ELEC-INPUT-RATIO = 0.0135
+   CAPACITY-CTRL    = TWO-SPEED-FAN
+   DESIGN-APPROACH  = 10
+   CW-LOOP          = "DEFAULT-CW"
+   ..
+
+
+$ ---------------------------------------------------------
+$              Tower Free Cooling
+$ ---------------------------------------------------------
+
+
+
+$ ---------------------------------------------------------
+$              Photovoltaic Modules
+$ ---------------------------------------------------------
+
+
+
+$ ---------------------------------------------------------
+$              Electric Generators
+$ ---------------------------------------------------------
+
+
+
+$ ---------------------------------------------------------
+$              Thermal Storage
+$ ---------------------------------------------------------
+
+
+
+$ ---------------------------------------------------------
+$              Ground Loop Heat Exchangers
+$ ---------------------------------------------------------
+
+
+
+$ ---------------------------------------------------------
+$              Compliance DHW (residential dwelling units)
+$ ---------------------------------------------------------
+
+
+
+$ *********************************************************
+$ **                                                     **
+$ **            Steam & Chilled Water Meters             **
+$ **                                                     **
+$ *********************************************************
+
+$ ---------------------------------------------------------
+$              Steam Meters
+$ ---------------------------------------------------------
+
+
+
+$ ---------------------------------------------------------
+$              Chilled Water Meters
+$ ---------------------------------------------------------
+
+
+
+$ *********************************************************
+$ **                                                     **
+$ **               HVAC Systems / Zones                  **
+$ **                                                     **
+$ *********************************************************
+
+"HVAC SYSTEM7" = SYSTEM          
+   TYPE             = PIU
+   HEAT-SOURCE      = HOT-WATER
+   ZONE-HEAT-SOURCE = NONE
+   BASEBOARD-SOURCE = NONE
+   COOL-SIZING-RATI = 1.15
+   HUMIDIFIER-TYPE  = NONE
+   MAX-SUPPLY-T     = 120
+   MIN-SUPPLY-T     = 55
+   MAX-HUMIDITY     = 100
+   MIN-HUMIDITY     = 0
+   MIN-AIR-SCH      = "S1 Sys1 (PSZ) MinOA Sch"
+   OA-CONTROL       = FIXED
+   FAN-SCHEDULE     = "S1 Sys1 (PSZ) Fan Sch"
+   FAN-CONTROL      = FAN-EIR-FPLR
+   SUPPLY-KW/FLOW   = 0.001
+   NIGHT-CYCLE-CTRL = CYCLE-ON-FIRST
+   FAN-EIR-FPLR     = "Fan-Pwr-fPLR-w/VFD"
+   MIN-FLOW-RATIO   = 0.3
+   HW-LOOP          = "SYSTEM1,5,7-HW"
+   CHW-LOOP         = "SYSTEM8-CHW"
+   HUMIDIFIER-LOC   = IN-AIR-HANDLER
+   ..

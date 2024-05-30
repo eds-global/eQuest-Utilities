@@ -4,6 +4,9 @@ import shutil
 from fpdf import FPDF
 # from src import readSim
 import PyPDF2
+import streamlit as st
+from pathlib import Path
+import fnmatch
 
 # Reading sim files line by line
 def read_sim_file(sim_file_path):
@@ -103,11 +106,29 @@ def generate_pdf(output_directory):
         
 # Function to extract relevent data from SIM file to based in input reports
 def extractReport(input_sim_files, reports):
-    print(f"Extracting reports from directory: {input_sim_files}")
+    st.success("in extract report")
     try:
-        simfiles = gb.glob(os.path.join(input_sim_files, '*.sim'))
-        print(f"Found SIM files: {simfiles}")
-
+        # Ensure the directory exists
+        if not os.path.exists(input_sim_files):
+            st.error(f"The directory {input_sim_files} does not exist.")
+        else:
+            # List all files in the directory and subdirectories
+            simfiles = []
+            for root, dirs, files in os.walk(input_sim_files):
+                for filename in files:
+                    if fnmatch.fnmatch(filename, '*.sim'):
+                        simfiles.append(os.path.join(root, filename))
+            
+            # Print the directory path and its contents for debugging
+            st.write(f"Directory: {input_sim_files}")
+            st.write(f"Contents: {os.listdir(input_sim_files)}")
+            st.write(f"Filtered .sim files: {simfiles}")
+            
+            if simfiles:
+                st.success(f"Found .sim files: {simfiles}")
+            else:
+                st.warning("No .sim files found in the directory.")
+        
         # Create "Report Outputs" folder inside the folder containing SIM files
         output_directory = os.path.join(input_sim_files, "Report Outputs")
         if not os.path.exists(output_directory):

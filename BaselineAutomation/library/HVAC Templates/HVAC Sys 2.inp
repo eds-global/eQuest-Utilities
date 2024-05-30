@@ -1,0 +1,19 @@
+$ *********************************************************
+$ **                                                     **
+$ **               HVAC Systems / Zones                  **
+$ **                                                     **
+$ *********************************************************
+
+"HVAC SYSTEM 2" = SYSTEM          
+   TYPE             = PTAC
+   HEAT-SOURCE      = HEAT-PUMP
+   BASEBOARD-SOURCE = NONE
+   HEAT-SIZING-RATI = 1.25
+   COOL-SIZING-RATI = 1.15
+   MIN-SUPPLY-T     = 55
+   FAN-SCHEDULE     = "RES FAN ANN"
+   FAN-CONTROL      = CONSTANT-VOLUME
+   SUPPLY-KW/FLOW   = 0.0003
+   COOLING-EIR      = 0.263548
+   CRANKCASE-HEAT   = 0
+   ..

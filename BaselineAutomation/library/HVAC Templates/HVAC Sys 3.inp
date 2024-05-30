@@ -1,0 +1,31 @@
+
+
+$ *********************************************************
+$ **                                                     **
+$ **               HVAC Systems / Zones                  **
+$ **                                                     **
+$ *********************************************************
+
+"HVAC SYSTEM 3" = SYSTEM          
+   TYPE             = PSZ
+   HEAT-SOURCE      = FURNACE
+   ZONE-HEAT-SOURCE = NONE
+   BASEBOARD-SOURCE = NONE
+   HEAT-SIZING-RATI = 1.25
+   COOL-SIZING-RATI = 1.15
+   HUMIDIFIER-TYPE  = NONE
+   MIN-SUPPLY-T     = 55
+   MAX-HUMIDITY     = 100
+   MIN-HUMIDITY     = 0
+   MIN-AIR-SCH      = "S1 Sys1 (PSZ) MinOA Sch"
+   OA-CONTROL       = FIXED
+   FAN-SCHEDULE     = "S1 Sys1 (PSZ) Fan Sch"
+   SUPPLY-KW/FLOW   = 0.0008
+   NIGHT-CYCLE-CTRL = CYCLE-ON-FIRST
+   COOLING-EIR      = 0.263548
+   CRANKCASE-HEAT   = 0
+   FURNACE-AUX      = 0
+   FURNACE-HIR      = 1.25
+   HUMIDIFIER-LOC   = IN-AIR-HANDLER
+   CONTROL-ZONE     = "EL1 North Perim Zn (G.N3)"
+   ..

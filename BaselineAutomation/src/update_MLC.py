@@ -1,5 +1,6 @@
 import json
 import os
+import streamlit as st
 
 # function to take climate_zone path from JSON file based on input!
 def get_climate_path(climate_zone, building_type):
@@ -65,6 +66,9 @@ def get_system_path(building_type, heat_type, area, floor):
 def insert_material_data(climate_zone_file, amenity_file):
     start_marker1 = "= MATERIAL"
     end_marker1 = ".."
+    # climate_zone_file = "D:\\EDS\\S2302 eQuest Automation\\S2302.1 Baseline Automation\\S2302.1_GIT\\" + climate_zone_file
+    st.success(climate_zone_file)
+
 
     with open(climate_zone_file, 'r') as file:
         data_climate_zone = file.readlines()
