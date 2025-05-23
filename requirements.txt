@@ -22,6 +22,7 @@ numpy==1.26.4
 openpyxl
 packaging==24.0
 pandas==2.2.2
+Cython>=0.29.35
 plotly==5.15.0
 pillow==10.3.0
 protobuf==4.25.3
