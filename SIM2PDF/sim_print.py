@@ -1,7 +1,6 @@
 import os
 import streamlit as st
 import shutil
-from fpdf import FPDF
 from SIM2PDF.src_pdf import readSim
 import PyPDF2
 import tempfile
