@@ -1,14 +1,12 @@
-streamlit==1.32.2
-xlwings==0.31.4
 altair==5.3.0
 attrs==23.2.0
-fpdf2==2.7.8
 blinker==1.8.2
 cachetools==5.3.3
 certifi==2024.6.2
 charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
+fpdf2==2.7.8
 fuzzywuzzy==0.18.0
 gitdb==4.0.11
 GitPython==3.1.43
@@ -18,10 +16,10 @@ jsonschema==4.22.0
 jsonschema-specifications==2023.12.1
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
-matplotlib
+matplotlib==3.8.4
 mdurl==0.1.2
 numpy==1.26.4
-openpyxl
+openpyxl==3.1.2
 packaging==24.0
 plotly==5.15.0
 pillow==10.3.0
@@ -38,6 +36,7 @@ rich==13.7.1
 rpds-py==0.18.1
 six==1.16.0
 smmap==5.0.1
+streamlit==1.35.0
 streamlit-card==1.0.2
 streamlit-lottie==0.0.5
 tenacity==8.3.0
@@ -48,4 +47,3 @@ typing_extensions==4.12.1
 tzdata==2024.1
 urllib3==2.2.1
 watchdog==4.0.1
-xlwings==0.31.4
