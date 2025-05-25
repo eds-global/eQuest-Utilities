@@ -2,6 +2,7 @@ streamlit==1.32.2
 xlwings==0.31.4
 altair==5.3.0
 attrs==23.2.0
+fpdf2==2.7.8
 blinker==1.8.2
 cachetools==5.3.3
 certifi==2024.6.2
