@@ -9,3 +9,4 @@ matplotlib
 openpyxl
 plotly
 plotly.express
+xlsxwriter
