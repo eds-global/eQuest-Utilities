@@ -8,3 +8,4 @@ fuzzywuzzy
 matplotlib
 openpyxl
 plotly
+plotly.express
