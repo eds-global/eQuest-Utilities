@@ -1,0 +1,36 @@
+
+
+$ *********************************************************
+$ **                                                     **
+$ **               HVAC Systems / Zones                  **
+$ **                                                     **
+$ *********************************************************
+
+"HVAC SYSTEM 6" = SYSTEM          
+   TYPE             = PIU
+   HEAT-SOURCE      = ELECTRIC
+   ZONE-HEAT-SOURCE = ELECTRIC
+   BASEBOARD-SOURCE = NONE
+   HEAT-SIZING-RATI = 1.25
+   COOL-SIZING-RATI = 1.15
+   HUMIDIFIER-TYPE  = NONE
+   COOL-SOURCE      = ELEC-DX
+   MAX-SUPPLY-T     = 90
+   MIN-SUPPLY-T     = 55
+   COOL-CONTROL     = WARMEST
+   MAX-HUMIDITY     = 100
+   MIN-HUMIDITY     = 0
+   RESET-PRIORITY   = TEMP-FIRST
+   MIN-AIR-SCH      = "S1 Sys1 (PSZ) MinOA Sch"
+   OA-CONTROL       = FIXED
+   FAN-SCHEDULE     = "S1 Sys1 (PSZ) Fan Sch"
+   FAN-CONTROL      = FAN-EIR-FPLR
+   SUPPLY-KW/FLOW   = 0.001
+   NIGHT-CYCLE-CTRL = CYCLE-ON-FIRST
+   FAN-EIR-FPLR     = "Fan-Pwr-fPLR-w/VFD"
+   REHEAT-DELTA-T   = 35
+   MIN-FLOW-RATIO   = 0.3
+   COOLING-EIR      = 0.263548
+   CRANKCASE-HEAT   = 0
+   HUMIDIFIER-LOC   = IN-AIR-HANDLER
+   ..

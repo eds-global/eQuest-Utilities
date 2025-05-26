@@ -1,0 +1,151 @@
+$ 90.1-2007 Baseline assemblies provided by ENERGY-MODELS.com
+$ By using this .inp file, you agree to the terms and conditions at Energy-models.com
+$ Energy-models.com shall have no liability with respect to the use of these imports
+$
+$ Construction Types as follows:
+$ 	Walls - Steel Framed
+$ 	Roofs - Insulation entirely above deck
+$ 	Windows - Simplified Glass calculates so that the U-factor in .SIM file matches with 90.1 2007 Tables 5.5-1-8
+$ 	Underground walls - a common sense approach was taken. Appendix A describes a procedure but the underground wall
+$ 		subsequently would not be a lightweight assembly. A 3" concrete wall with adjusted conductance was used to avoid being a "mass wall"
+$		as defined in the footnotes of Table A3.1B
+$
+$  Source: ASHRAE 2005 Fundamentals Ch 25 table 4, Ch 39 Table 3, and  ASHRAE 90.1-2007 Appendix A
+
+
+
+
+"90.1 2007 Stucco" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.03125
+   CONDUCTIVITY     = 0.3906
+   DENSITY          = 116
+   SPECIFIC-HEAT    = 0.2
+   ..
+"90.1 2007 Gyp Board" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.0521
+   CONDUCTIVITY     = 0.093
+   DENSITY          = 50
+   SPECIFIC-HEAT    = 0.26
+   ..
+"90.1 2007 R13 Steel Frame" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.2917
+   CONDUCTIVITY     = 0.048611
+   DENSITY          = 60
+   SPECIFIC-HEAT    = 0.1725
+   ..
+"90.1 2007 R3.75 ci" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.08333
+   CONDUCTIVITY     = 0.02222
+   DENSITY          = 1
+   SPECIFIC-HEAT    = 0.29
+   ..
+"90.1 2007 Metal Deck" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.020833
+   CONDUCTIVITY     = 26.2
+   DENSITY          = 489
+   SPECIFIC-HEAT    = 0.12
+   ..
+"90.1 2007 R15 ci" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.25
+   CONDUCTIVITY     = 0.016667
+   DENSITY          = 2.25
+   SPECIFIC-HEAT    = 0.29
+   ..
+"90.1 2007 R20 ci" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.333
+   CONDUCTIVITY     = 0.016667
+   DENSITY          = 2.25
+   SPECIFIC-HEAT    = 0.29
+   ..
+   "90.1 2007 Con Und wall CZ 1-4" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.25
+   CONDUCTIVITY     = 1.558
+   DENSITY          = 75.23
+   SPECIFIC-HEAT    = 0.2
+   ..
+"90.1 2007 Conc Und Wall CZ 5-8" = MATERIAL        
+   TYPE             = PROPERTIES
+   THICKNESS        = 0.25
+   CONDUCTIVITY     = 0.0323
+   DENSITY          = 75.23
+   SPECIFIC-HEAT    = 0.2
+   ..
+
+"90.1 2007 BL W Z4-8" = LAYERS          
+   MATERIAL         = ( "90.1 2007 Stucco", "90.1 2007 Gyp Board", 
+         "90.1 2007 R13 Steel Frame", "90.1 2007 R3.75 ci", 
+         "90.1 2007 R3.75 ci", "90.1 2007 Gyp Board" )
+   ..
+
+"90.1 2007 BL R Z2-8" = LAYERS          
+   MATERIAL         = ( "90.1 2007 R20 ci", "90.1 2007 Metal Deck" )
+   ..
+
+"90.1 2007 Und Wall CZ 1-4" = LAYERS          
+   MATERIAL         = ( "90.1 2007 Con Und wall CZ 1-4" )
+..
+
+"90.1 2007 Res Wall Z4" = CONSTRUCTION    
+   TYPE             = LAYERS
+   LAYERS           = "90.1 2007 BL W Z4-8"
+   ..
+
+"90.1 2007 Res Roof Z4" = CONSTRUCTION    
+   TYPE             = LAYERS
+   LAYERS           = "90.1 2007 BL R Z2-8"
+   ..
+
+"90.1 2007 Res Undergrd W Z4" = CONSTRUCTION    
+   TYPE             = LAYERS
+   LAYERS           = "90.1 2007 Und Wall CZ 5-8"
+   ..
+"90.1 2007 Res Door Swing Z4" = CONSTRUCTION    
+   TYPE             = U-VALUE
+   U-VALUE          = 0.7
+   ..
+
+"90.1 2007 Res Door NonSwing Z4" = CONSTRUCTION    
+   TYPE             = U-VALUE
+   U-VALUE          = 0.5
+   ..
+
+
+
+$ ---------------------------------------------------------
+$              Glass Types
+$ ---------------------------------------------------------
+
+
+
+   
+$Climate Zone 4
+
+"90.1 2007 nonmf win Z4" = GLASS-TYPE      
+   TYPE             = SHADING-COEF
+   SHADING-COEF     = 0.463
+   GLASS-CONDUCT    = .454
+   ..
+"90.1 2007 MF Curt.wall win Z4" = GLASS-TYPE      
+   TYPE             = SHADING-COEF
+   SHADING-COEF     = 0.463
+   GLASS-CONDUCT    = .5878
+   ..
+"90.1 2007 MF Entrance Door Z4" = GLASS-TYPE      
+   TYPE             = SHADING-COEF
+   SHADING-COEF     = 0.463
+   GLASS-CONDUCT    = 1.14
+   ..
+"90.1 2007 MF win All Z4" = GLASS-TYPE      
+   TYPE             = SHADING-COEF
+   SHADING-COEF     = 0.463
+   GLASS-CONDUCT    = .658
+   ..
+   
