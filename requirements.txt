@@ -2,3 +2,4 @@ streamlit
 streamlit-card
 xlwings
 fpdf
+PyPDF2
