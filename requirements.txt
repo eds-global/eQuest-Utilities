@@ -3,3 +3,4 @@ streamlit-card
 xlwings
 fpdf
 PyPDF2
+streamlit_lottie
