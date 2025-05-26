@@ -7,3 +7,4 @@ streamlit_lottie
 fuzzywuzzy
 matplotlib
 openpyxl
+plotly
