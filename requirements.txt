@@ -6,3 +6,4 @@ PyPDF2
 streamlit_lottie
 fuzzywuzzy
 matplotlib
+openpyxl
