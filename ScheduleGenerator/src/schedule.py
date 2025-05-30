@@ -103,11 +103,11 @@ def getScheduleINP(data):
         month_indexes = data.index[data.iloc[:, 0] == 'Month'].tolist()
 
         for i, month_row_index in enumerate(month_indexes):
-            month_values = data.iloc[month_row_index, 1:13].tolist()
+            month_values = data.iloc[month_row_index, 1:25].tolist()
             formatted_values1 = ', '.join([str(x) for x in month_values if pd.notnull(x) and x != 'Columns can be added here till 8760'])
 
             day_row_index = month_row_index + 1
-            day_values = data.iloc[day_row_index, 1:13].tolist()
+            day_values = data.iloc[day_row_index, 1:25].tolist()
             formatted_values2 = ', '.join(map(str, filter(pd.notnull, day_values)))
 
             if day_row_index + 1 < len(data):
@@ -117,7 +117,7 @@ def getScheduleINP(data):
                     if isinstance(schedule_name, str) and schedule_name.lower() in ["month", "day"]:
                         break
 
-                    row_values = data.iloc[schedule_row_index, 1:13].tolist()
+                    row_values = data.iloc[schedule_row_index, 1:25].tolist()
                     formatted_days = ', '.join(f'"{value}"' for value in row_values if pd.notnull(value))
 
                     output_content.write(format_line(f'"{schedule_name}" = SCHEDULE-PD\n'))
