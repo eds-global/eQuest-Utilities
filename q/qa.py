@@ -810,7 +810,7 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                     elif value3 == 0 and value0 != 0:
                         ratio1 = '-'
                     else:
-                        value3 = value3.replace("%", "")
+                        # value3 = value3.replace("%", "")
                         ratio1 = float(value0)/float(value3)
                     new_row_last[col] = [f'{ratio1:.1f}'] if ratio1 != '-' else [ratio1]
 
@@ -1118,7 +1118,6 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                 new_row_last_df = pd.DataFrame(new_row_last)
                 new_row_last_df1 = pd.DataFrame(new_row_last1)
                 data_mbtu_sum = pd.concat([data_mbtu_sum, new_row_last_df, new_row_last_df1]).reset_index(drop=True)
-        
 
         ###############################################################################################################
         ################################################## Pie CHART ##################################################
@@ -1520,7 +1519,7 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                 # Create a DataFrame from the new row
                 new_row_df = pd.DataFrame([new_row4])
                 data_kwh_sum1 = pd.concat([data_kwh_sum1, new_row_df], ignore_index=True)
-                st.write(data_kwh_sum1)
+                # st.write(data_kwh_sum1)
     
             st.markdown(f"""<h7 style="color:red;">🔴 THERM & MAX THERM/HR</h7>""", unsafe_allow_html=True)
             # if empty dataframe then write message in markdown - No THERM & MAX THERM/HR data found in the selected data
@@ -1711,7 +1710,7 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                 # Create a DataFrame from the new row
                 new_row_df = pd.DataFrame([new_row4])
                 data_therm_sum1 = pd.concat([data_therm_sum1, new_row_df], ignore_index=True)
-                st.write(data_therm_sum1)
+                # st.write(data_therm_sum1)
             
             st.markdown(f"""<h7 style="color:orange;">🟠 MBTU & MAX MBTU/HR</h7>""", unsafe_allow_html=True)
              # if empty dataframe then write message in markdown - No MBTU & MAX MBTU data found in the selected data
@@ -1905,7 +1904,7 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                 # Create a DataFrame from the new row
                 new_row_df = pd.DataFrame([new_row4])
                 data_mbtu_sum1 = pd.concat([data_mbtu_sum1, new_row_df], ignore_index=True)
-                st.write(data_mbtu_sum1)
+                # st.write(data_mbtu_sum1)
                 
             ###############################################################################################################
             ################################################## Other Tables ###############################################
