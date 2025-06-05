@@ -28,91 +28,28 @@ st.set_page_config(
     page_title="eQUEST Utilities",
     page_icon="💡",
     layout='wide',  # Only 'centered' or 'wide' are valid options
-    menu_items={                          
-        'Get Help': 'https://www.example.com/help',
-        'Report a bug': 'https://www.example.com/bug',
-        'About': '# This is an **eQuest Utilities** application!'
-    }
 )
 
-def load_lottieurl(url: str):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
-    
-def set_dark_theme():
-    """
-    Function to set a dark theme using CSS.
-    """
-    # Define the HTML code with CSS for a dark theme
-    html_code = """
+# Inject custom CSS to reduce top padding/margin
+st.markdown("""
     <style>
-    .stApp {
-        background-color: black;  /* Set background color to black */
-        color: white;  /* Set text color to white */
-    }
-    .stMarkdown, .stImage, .stDataFrame, .stTable, .stTextInput, .stButton, .stSidebar {
-        background-color: transparent !important; /* Make elements' background transparent */
-        color: white !important;  /* Ensure text color within these elements is white */
-    }
-    .stButton > button {
-        background-color: #333; /* Dark background for buttons */
-        color: white;  /* White text for buttons */
-    }
-    .stSidebar {
-        background-color: #222; /* Slightly lighter background for sidebar */
-    }
-    .stTextInput > div > input {
-        background-color: #444; /* Dark background for text input */
-        color: white;  /* White text for text input */
-    }
+        /* Remove top padding from main container */
+        .block-container {
+            padding-top: 0rem !important;
+        }
+
+        /* Optional: Remove padding from header if it's showing */
+        header {
+            padding-top: 0rem !important;
+            margin-top: 0rem !important;
+        }
+
+        /* Optional: Remove margin from main content */
+        main {
+            margin-top: 0rem !important;
+        }
     </style>
-    """
-    # Inject the HTML code in the Streamlit app
-    st.markdown(html_code, unsafe_allow_html=True)
-    
-def confetti_animation():
-    st.markdown(
-        """
-        <style>
-        @keyframes confetti {
-            0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-100vh) rotate(360deg); }
-        }
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            background-image: linear-gradient(135deg, transparent 10%, #f00 10%, #f00 20%, transparent 20%, transparent 30%, #0f0 30%, #0f0 40%, transparent 40%, transparent 50%, #00f 50%, #00f 60%, transparent 60%, transparent 70%);
-            background-size: 10px 10px;
-            animation: confetti 5s linear infinite;
-            opacity: 0.7;
-        }
-        </style>
-        """
-    )
-    st.markdown('<div class="confetti"></div>', unsafe_allow_html=True)
-
-def send_email(subject, message, from_email, to_email):
-    msg = MIMEMultipart()
-    msg['From'] = from_email
-    msg['To'] = to_email
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(message, 'plain'))
-    try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        text = msg.as_string()
-        server.sendmail(from_email, to_email, text)
-        server.quit()
-        return True
-    except Exception as e:
-        # print(f"Failed to send email: {e}")
-        st.success("Email sent successfully!")
-        return False
+    """, unsafe_allow_html=True)
 
 button_style = """
     <style>
@@ -121,8 +58,6 @@ button_style = """
         }
     </style>
 """
-
-# Render the button with the defined style
 st.markdown(button_style, unsafe_allow_html=True)
 
 # Define CSS style with text-shadow effect for the heading
@@ -193,12 +128,6 @@ def main():
     with col2:
         # st.markdown("<h1 class='heading-with-shadow'>eQUEST Utilities</h1>", unsafe_allow_html=True)
         st.markdown("# :rainbow[eQUEST Utilities]")
-
-    on = st.toggle("Select Theme")
-    if on:
-        set_dark_theme()
-        pass  # Do nothing
-        background_image_url = "https://i.pinimg.com/originals/cf/04/e9/cf04e9530f25312133dc7f93586591ff.gif"
     with col3:
         st.image("images/EDSlogo.jpg", width=120)
 
@@ -214,8 +143,7 @@ def main():
     
     # Create two rows of columns with equal widths
     col2, col3, col4, col5, col6, col7, col8 = st.columns(7) 
-    col9, col10, col11, col12, col13, col14, col15 = st.columns(7)
-    col16, col17, _, _, _, _, _ = st.columns(7)
+    col9, col10, col11, col13, col14, col15, col16 = st.columns(7)
     
     # First row of buttons
     with col2:
@@ -250,9 +178,9 @@ def main():
     with col11:
         if st.button("Polygon Parser", key="button_analytics"): #Queries
             st.session_state.script_choice = "sh1"
-    with col12:
-        if st.button("EXE and Resources", key="button_exe_resources"):
-            st.session_state.script_choice = "exe"
+    # with col12:
+    #     if st.button("EXE and Resources", key="button_exe_resources"):
+    #         st.session_state.script_choice = "exe"
     with col13:
         if st.button("IGBC Green 🏡", key="references"): #Queries
             st.session_state.script_choice = "reference"
@@ -262,8 +190,6 @@ def main():
     with col15:
         if st.button("MEPC Tool", key="mep_calculator"): #Queries
             st.session_state.script_choice = "mepc"
-
-    # Third rows of buttons
     with col16:
         if st.button("HAP Tool", key="HAP_calculator"): #Queries
             st.session_state.script_choice = "hap"
@@ -285,8 +211,12 @@ def main():
             📄 <b style="color:red;">SIM to PDF Converter:</b> Easily convert your SIM files into PDF format for better sharing and documentation.<br>
             ⚙️ <b style="color:red;">Baseline Automation:</b> Modifies INP files based on the user input.<br>
             📅 <b style="color:red;">Schedule Generator:</b> Our CSV-Based Schedule Generator Tool is designed to simplify and automate the process of creating schedules.<br>
-            ✅ <b style="color:red;">Quality Check / Quality Assurance:</b> A quality check, also known as quality control (QC), refers to the process of ensuring that a product or service meets a defined set of quality criteria or standards.<br><br>
-            
+            ✅ <b style="color:red;">Quality Check / Quality Assurance:</b> A quality check, also known as quality control (QC), refers to the process of ensuring that a product or service meets a defined set of quality criteria or standards.<br>
+            📄 <b style="color:red;">Polygon Parser:</b> A parser for INP files to get Coordinates in CSV Files.<br>
+            ⚙️ <b style="color:red;">IGBC Green:</b> A tool that compares INP and SIM Files and extrcat SPACE by SPACE Area.<br>
+            📅 <b style="color:red;">Calibration Tool:</b> This tool calibrates energy simulation models to align with actual measured data, ensuring greater accuracy in predicting energy performance.<br>
+            ✅ <b style="color:red;">MEPC Tool:</b> The MEP Calculator is a tool designed to support energy-efficient building projects, including LEED-certified initiatives.<br>
+            📄 <b style="color:red;">HAP Tool:</b> A parser for .RTF files to get Excel output generated from the “SPACE Input sheet.RTF”. <br>
             """, unsafe_allow_html=True)
         with col2:
             st.image("https://www.filepicker.io/api/file/ISb3e710QSmh95AYIdef", width=560)
@@ -340,7 +270,7 @@ def main():
     elif st.session_state.script_choice == "sh1":
         st.markdown("""
         <h4 style="color:red;">📄 Polygon Parser</h4>
-        <b>Purpose:</b> A Polygon Parser is a tool or script designed to extract and analyze polygon data, usually from text or file formats such as JSON, XML, or custom structures. This parser typically processes attributes of polygons like their vertices, edges, and associated metadata. <br>
+        <b>Purpose:</b> A Polygon Parser is a tool or script designed to extract and analyze polygon data, usually from text or file formats. This parser typically processes attributes of polygons like their vertices, edges, and associated metadata. <br>
         <br>
         """, unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Upload an INP file", type="inp", accept_multiple_files=False)
@@ -467,23 +397,14 @@ def main():
                 st.info("Please upload the Baseline SIM file for Lighting analysis.")
         else:
             st.info("Please upload at least the 0° and Proposed SIM files to proceed.")
-
-        with st.container():
-            st.markdown("#### :rainbow[Website Visitors Count]")
-            components.html("""
-                <p align="center">
-                    <a href="https://equest-utilities-edsglobal.streamlit.app/" target="_blank">
-                        <img src="https://hitwebcounter.com/counter/counter.php?page=15322595&style=0019&nbdigits=5&type=ip&initCount=70" title="Counter Widget" alt="Visit counter For Websites" border="0" />
-                    </a>
-                </p>
-            """, height=80)
        
     elif st.session_state.script_choice == "reference":
         st.markdown("""
         <h4 style="color:green;">🏡 IGBC Green Homes </h4>
-        <b>Purpose:</b> IGBC Green Homes is a rating system developed by the Indian Green Building Council (IGBC) to promote sustainable building practices 
+        <b>About:</b> IGBC Green Homes is a rating system developed by the Indian Green Building Council (IGBC) to promote sustainable building practices 
         in the residential sector. IGBC Green Homes aims to create sustainable and resource-efficient residential buildings, contributing to a greener
-        and healthier environment.<br>
+        and healthier environment.<br><br>
+        <b>Purpose:</b> A tool that compares INP and SIM Files and extrcat SPACE by SPACE Area. Also, that output can generated in CSV files.<br>
         <br>
         """, unsafe_allow_html=True)
         col1, col2 = st.columns(2)
@@ -545,7 +466,8 @@ def main():
     elif st.session_state.script_choice == "hap":
         st.markdown("""
         <h4 style="color:blue;">🔧 HAP Tool</h4>
-        <b>Purpose:</b> The HAP (Hourly Analysis Program) tool is a software developed by Carrier Corporation used primarily for HVAC system design and energy modeling.
+        <b>Purpose:</b> Excel output generated from the “SPACE Input sheet.RTF”.
+        The file contains Space Name, Floor Area (ft²), Average Ceiling Height (ft), Occupancy (People), Wattage (Overhead Lighting), Wattage (Task Lighting), Wattage (Electrical Equipment)
         """, unsafe_allow_html=True)
         uploaded_files = st.file_uploader("Upload RTF files", type="RTF", accept_multiple_files=False)
         if uploaded_files is not None:
@@ -752,3 +674,18 @@ st.markdown(
     </div>
     """, unsafe_allow_html=True
 )
+
+with st.container():
+    st.markdown(
+        """
+        <div style='display: flex; align-items: center; gap: 8px; font-size: 19px;'>
+            <span style='font-weight: 600;'>Website Visitors Count:</span>
+            <a href="https://equest-utilities-edsglobal.streamlit.app/" target="_blank">
+                <img src="https://hitwebcounter.com/counter/counter.php?page=15322595&style=0019&nbdigits=5&type=ip&initCount=0"
+                     title="Counter Widget" alt="Visit counter For Websites" border="0"
+                     style="height: 20px;" />
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
