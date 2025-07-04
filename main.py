@@ -11,7 +11,7 @@ from streamlit_lottie import st_lottie
 from BaselineAutomation import baselineAuto
 from ScheduleGenerator import schedule_v01
 from ScheduleGenerator import sheduls_analytics
-from MEP_Calculator import ps_e
+from MEP_Calculator import ps_e, eflh
 from MEP_Calculator import lv_d
 from q import qa
 from Happ import hap
@@ -335,8 +335,8 @@ def main():
             if st.button("Shade & Fenes."):
                 st.session_state.analysis_option = "Shading and Fenestration"
         with col3:
-            if st.button("Lighting"):
-                st.session_state.analysis_option = "Lighting"
+            if st.button("Schedules"):
+                st.session_state.analysis_option = "Schedules"
         if st.session_state.analysis_option:
             st.write(f"You selected: **{st.session_state.analysis_option}**")
         analysis_option = st.session_state.analysis_option
@@ -384,7 +384,7 @@ def main():
                 if st.button("Generate Reports"):
                     lv_d.generateFenestration(uploaded_0_degree, uploaded_proposed_file)
 
-        elif analysis_option == "Lighting":
+        elif analysis_option == "Schedules":
             col1, col2 = st.columns(2)
             with col1:
                 uploaded_0_degree = st.file_uploader("Upload a Baseline SIM File", type=["sim"], accept_multiple_files=False)
@@ -392,9 +392,7 @@ def main():
                 uploaded_proposed_file = st.file_uploader("Upload Proposed SIM File", type=["sim"], accept_multiple_files=False)
             if uploaded_0_degree is not None and uploaded_proposed_file is not None:
                 if st.button("Generate Reports"):
-                    lighting.generateLighting(uploaded_0_degree, uploaded_proposed_file, uploaded_INP_file)
-            else:
-                st.info("Please upload the Baseline SIM file for Lighting analysis.")
+                    eflh.generateSchedules(uploaded_0_degree, uploaded_proposed_file)
         else:
             st.info("Please upload at least the 0° and Proposed SIM files to proceed.")
        

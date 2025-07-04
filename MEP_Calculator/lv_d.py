@@ -8,6 +8,7 @@ import streamlit as st
 import tempfile
 from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
+import numpy as np
 
 warnings.filterwarnings("ignore")
 
@@ -66,6 +67,57 @@ def get_LVD_Summary(name):
                             'WINDOW(AREA)(SQFT)', 'WALL(AREA)(SQFT)', 'WINDOW+WALL(AREA)(SQFT)']
         return pd.DataFrame(columns=columns)
 
+############################################  SVA ###############################################
+
+def get_SVA_report(name):
+    with open(name) as f:
+        flist = f.readlines()
+
+        sva_counts = [] 
+        for num, line in enumerate(flist, 0):
+            if 'SV-A' in line:
+                sva_counts.append(num)
+            if 'SS-D' in line:
+                numend = num
+        numstart = sva_counts[0] 
+        sva_rpt = flist[numstart:numend]
+        
+        sva_str = []
+        for line in sva_rpt:
+            if (('zn' in line and '.' in line) or ('Zn' in line and '.' in line) or
+                ('Zone' in line and '.' in line) or ('zone' in line and '.' in line)):
+                sva_str.append(line)
+
+        result = []  
+        for line in sva_str:
+            sva_list = []
+            splitter = line.split()
+            space_name = " ".join(splitter[:-11])
+            sva_list=splitter[-11:]
+            sva_list.insert(0,space_name)
+            result.append(sva_list)
+
+        sva_zone = pd.DataFrame(result)
+        sva_zone.columns = ['ZONE_NAME', 'SUPPLY-FLOW(CFM)', 'EXHAUST-FLOW(CFM)',
+                        'FAN(KW)', 'MINIMUM_FLOW(FRAC)', 'OUTISIDE-AIR-FLOW(CFM)',
+                        'COOLING_CAPACITY(KBTU/HR)', 'SENSIBLE(FRAC)', 'EXTRACTION-RATE(KBTU/HR)',
+                        'HEATING_CAPACITY(KBTU/HR)', 'ADDITION-RATE(KBTU/HR)', 'ZONE-MULT']
+        sva_zone.index.name = name
+        value_before_backslash = ''.join(reversed(name)).split("\\")[0]
+        name1 = ''.join(reversed(value_before_backslash))
+        name = name1.rsplit(".", 1)[0]
+        # sva_zone.insert(0, 'RUNNAME', name)
+        # Dropping rows where 'ZONE_NAME' column does not contain specified substrings
+        sva_zone = sva_zone[sva_zone['ZONE_NAME'].str.contains(r'\bzn\b|\bZn\b|\bZone\b|\bzone\b|\b\b')]
+        # Dropping rows where 'SUPPLY-FLOW(CFM)' column does not contain specified substrings
+        sva_zone = sva_zone[sva_zone['SUPPLY-FLOW(CFM)'].str.contains(r'\b\b')]
+        # Replace non-numeric values with NaN in 'SUPPLY-FLOW(CFM)'
+        sva_zone['SUPPLY-FLOW(CFM)'] = pd.to_numeric(sva_zone['SUPPLY-FLOW(CFM)'], errors='coerce')
+        # Adding 'SPACES' column based on 'SUPPLY-FLOW(CFM)' condition
+        sva_zone['SPACES'] = np.where(sva_zone['SUPPLY-FLOW(CFM)'] == 0, 'UnConditioned', 'Conditioned')
+        
+    return sva_zone
+
 def generateFenestration(baseline, proposed):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
         temp_file.write(baseline.read())
@@ -77,6 +129,8 @@ def generateFenestration(baseline, proposed):
 
     lv_d_proposed = get_LVD_Summary(temp_file_path_proposed)
     lv_d_baseline = get_LVD_Summary(temp_file_path_baseline)
+    sv_a_baseline = get_SVA_report(temp_file_path_baseline)
+    sv_a_proposed = get_SVA_report(temp_file_path_proposed)
     
     north_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'NORTH', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
     south_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'SOUTH', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
@@ -230,19 +284,41 @@ def generateFenestration(baseline, proposed):
     else:
         diff_area = 0
     converted_area = round(float(diff_area) * 0.092903, 2)
-    data2 = [
-        [round(float(roof_wall_area)*0.092903,2), converted_area, "", "", "", "", "", ""],
+
+    conditioned_count_base = (sv_a_baseline['SUPPLY-FLOW(CFM)'] != 0).sum()
+    unconditioned_count_base = (sv_a_baseline['SUPPLY-FLOW(CFM)'] == 0).sum() 
+    conditioned_count_pro = (sv_a_proposed['SUPPLY-FLOW(CFM)'] != 0).sum()
+    unconditioned_count_pro = (sv_a_proposed['SUPPLY-FLOW(CFM)'] == 0).sum()
+
+    data_row = [
+        round(float(roof_wall_area)*0.092903, 2),  # Converted area
+        roof_wind_area,                            # Roof window area
+        conditioned_count_base,                   # Conditioned base
+        "",                                       # Placeholder for condition comparison
+        unconditioned_count_base,                 # Unconditioned base
+        "", "", ""                                # Remaining placeholders
     ]
+
+    # Fill "Identical to Baseline" if applicable
+    if conditioned_count_base == conditioned_count_pro:
+        data_row[5] = "Identical to Baseline"
+
+    if unconditioned_count_base == unconditioned_count_pro:
+        data_row[7] = "Identical to Baseline"
+
+    data2 = [data_row]
 
     df2 = pd.DataFrame(data2, columns=columns2)
     st.markdown("""<h6 style="color:red;">🔴 Shading</h6>""", unsafe_allow_html=True)
     st.write("🪷 Above-grade Wall and Glazing")
-    st.write(df1, "\n")
+    st.write(df1)
+    if df1['Proposed']['Vertical Glazing Area (%)'][4] < 40.0 or df1['Baseline']['Vertical Glazing Area (%)'][4] < 40:
+        st.info("ℹ️ The vertical glazing percentage is below 40%, supporting good thermal performance.")
 
     st.write("🪷 Roof/Skylight & Thermal Blocks")
     st.write(df2)
 
-    st.markdown("""<h6 style="color:red;">🔴 Fenestration</h6>""", unsafe_allow_html=True)
+    # st.markdown("""<h6 style="color:red;">🔴 Fenestration</h6>""", unsafe_allow_html=True)
     columns = pd.MultiIndex.from_tuples([
         ("General Information", "Building ID"),
         ("General Information", "New or Existing Construction"),
@@ -269,7 +345,7 @@ def generateFenestration(baseline, proposed):
         ""                                   # Proposed VLT
     ]]
     dfss = pd.DataFrame(data, columns=columns)
-    st.write(dfss)
+    # st.write(dfss)
 
     # st.markdown("""<h6 style="color:red;">🔴 Fenestration New</h6>""", unsafe_allow_html=True)
     # columns = pd.MultiIndex.from_tuples([
