@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 from io import BytesIO
+import pdfplumber
 
 def update_inp_file(uploaded_file):
     try:
@@ -64,5 +65,44 @@ def main(uploaded_file):
                 mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
 
-if __name__ == "__main__":
-    main(uploaded_file)
+##################################################################################################
+############################################ PDF Export ##########################################
+##################################################################################################
+
+def extract_values(text_block):
+    room_match = re.search(r'^([A-Z0-9-]+-[^\n]+)', text_block)
+    floor_area = re.search(r'Floor Area\s+\.{2,}\s+([\d.]+)', text_block)
+    ceiling_height = re.search(r'Ceiling Height\s+\.{2,}\s+([\d.]+)', text_block)
+    building_weight = re.search(r'Building Weight\s+\.{2,}\s+([\d.]+)', text_block)
+    oa_req1 = re.search(r'OA Requirement 1\s+\.{2,}\s+([\d.]+)', text_block)
+    oa_req2 = re.search(r'OA Requirement 2\s+\.{2,}\s+([\d.]+)', text_block)
+    occupancy = re.search(r'Occupancy\s+\.{2,}\s+([\d.]+)', text_block)
+    sensible = re.search(r'Sensible\s+\.{2,}\s+([\d.]+)', text_block)
+    latent = re.search(r'Latent\s+\.{2,}\s+([\d.]+)', text_block)
+
+    lighting = re.search(r'Overhead Lighting:.*?Wattage\s+\.{2,}\s+([\d.]+)', text_block, re.DOTALL)
+    lighting_unit = re.search(r'Overhead Lighting:.*?Wattage\s+\.{2,}\s+[\d.]+\s*([^\s]+)', text_block, re.DOTALL)
+
+    task_lighting = re.search(r'Task Lighting:.*?Wattage\s+\.{2,}\s+([\d.]+)', text_block, re.DOTALL)
+    task_lighting_unit = re.search(r'Task Lighting:.*?Wattage\s+\.{2,}\s+[\d.]+\s*([^\s]+)', text_block, re.DOTALL)
+
+    electrical = re.search(r'Electrical Equipment:.*?Wattage\s+\.{2,}\s+([\d.]+)', text_block, re.DOTALL)
+    electrical_unit = re.search(r'Electrical Equipment:.*?Wattage\s+\.{2,}\s+[\d.]+\s*([^\s]+)', text_block, re.DOTALL)
+
+    return [
+        room_match.group(1).strip() if room_match else "",
+        float(floor_area.group(1)) if floor_area else None,
+        float(ceiling_height.group(1)) if ceiling_height else None,
+        float(building_weight.group(1)) if building_weight else None,
+        float(oa_req1.group(1)) if oa_req1 else None,
+        float(oa_req2.group(1)) if oa_req2 else None,
+        float(occupancy.group(1)) if occupancy else None,
+        float(sensible.group(1)) if sensible else None,
+        float(latent.group(1)) if latent else None,
+        float(lighting.group(1)) if lighting else None,
+        lighting_unit.group(1) if lighting_unit else "",
+        float(task_lighting.group(1)) if task_lighting else None,
+        task_lighting_unit.group(1) if task_lighting_unit else "",
+        float(electrical.group(1)) if electrical else None,
+        electrical_unit.group(1) if electrical_unit else ""
+    ]

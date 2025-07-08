@@ -110,7 +110,7 @@ def get_LVG_Report(name):
 
     return df
 
-def generateSchedules(baseline, proposed):
+def generateSchedules(baseline, proposed, holiday, monday, tuesday, wednesday, thursday, friday, saturday, sunday):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
         temp_file.write(baseline.read())
         temp_file_path_baseline = temp_file.name
@@ -118,10 +118,83 @@ def generateSchedules(baseline, proposed):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
         temp_file.write(proposed.read())
         temp_file_path_proposed = temp_file.name
-
+    
     lv_g_proposed = get_LVG_Report(temp_file_path_proposed)
     lv_g_baseline = get_LVG_Report(temp_file_path_baseline)
+
+    subset_b = lv_g_baseline.iloc[:, :24]
+    numeric_subset_b = subset_b.apply(pd.to_numeric, errors='coerce')
+    subset_p = lv_g_baseline.iloc[:, :24]
+    numeric_subset_p = subset_p.apply(pd.to_numeric, errors='coerce')
+    lv_g_baseline['Hours / Day'] = numeric_subset_b.sum(axis=1)
+    lv_g_proposed['Hours / Day'] = numeric_subset_p.sum(axis=1)
+
+    holiday = holiday
+    weekday = monday + tuesday + wednesday + thursday + friday
+    weekend = saturday + sunday
+
+    def get_multiplier(day_type):
+        day_type = str(day_type).upper()
+        if 'HOL' in day_type:
+            return holiday
+        elif 'SAT' in day_type:
+            return weekend
+        elif 'CDD' in day_type:
+            return weekday
+        else:
+            return weekday
+
+    lv_g_baseline['Hours / Year'] = lv_g_baseline.apply(lambda row: row['Hours / Day'] * get_multiplier(row['Day Type']), axis=1)
+    lv_g_proposed['Hours / Year'] = lv_g_proposed.apply(lambda row: row['Hours / Day'] * get_multiplier(row['Day Type']), axis=1)
+
+    numeric_cols = lv_g_baseline.columns.difference(['Schedule'])
+    result_baseline = pd.DataFrame(columns=lv_g_baseline.columns)
+    numeric_cols_p = lv_g_proposed.columns.difference(['Schedule'])
+    result_proposed = pd.DataFrame(columns=lv_g_proposed.columns)
+
+    cols = lv_g_baseline.columns.tolist()
+    second_last_col = cols[-2]
+    last_col = cols[-1]
+    cols_p = lv_g_proposed.columns.tolist()
+    second_last_col_p = cols_p[-2]
+    last_col_p = cols_p[-1]
+
+    for name, group in lv_g_baseline.groupby('Schedule'):
+        result_baseline = pd.concat([result_baseline, group], ignore_index=True)
+        total_values = group[numeric_cols].sum()
+        total_row = pd.Series("", index=lv_g_baseline.columns)
+        total_row['Schedule'] = 'Total hours of operation'
+        total_row[second_last_col] = total_values[second_last_col]
+        total_row[last_col] = total_values[last_col]
+        result_baseline = pd.concat([result_baseline, pd.DataFrame([total_row])], ignore_index=True)
+    
+    for name, group in lv_g_proposed.groupby('Schedule'):
+        result_proposed = pd.concat([result_proposed, group], ignore_index=True)
+        total_values = group[numeric_cols_p].sum()
+        total_row_p = pd.Series("", index=lv_g_proposed.columns)
+        total_row_p['Schedule'] = 'Total hours of operation'
+        total_row_p[second_last_col] = total_values[second_last_col_p]
+        total_row_p[last_col_p] = total_values[last_col_p]
+        result_proposed = pd.concat([result_proposed, pd.DataFrame([total_row_p])], ignore_index=True)
+    total_days = sum([holiday, monday, tuesday, wednesday, thursday, friday, saturday, sunday])
+    data = {
+        "Days per Year": [
+            holiday,
+            monday,
+            tuesday,
+            wednesday,
+            thursday,
+            friday,
+            saturday,
+            sunday,
+            total_days
+        ]
+    }
+    index = ["Holiday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Total (must equal 365 days/year)"]
+    days_ = pd.DataFrame(data, index=index)
+    st.markdown("<h6 style='color: red;'>🔰 Yearly Schedule Allocation</h3>", unsafe_allow_html=True)
+    st.write(days_)
     st.markdown("<h6 style='color: red;'>🗂️ Baseline LV-G Report - Details of Schedules</h3>", unsafe_allow_html=True)
-    st.write(lv_g_baseline)
+    st.write(result_baseline)
     st.markdown("<h6 style='color: red;'>🗂️ Proposed LV-G Report - Details of Schedules</h3>", unsafe_allow_html=True)
-    st.write(lv_g_proposed)
+    st.write(result_proposed)

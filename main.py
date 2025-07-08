@@ -23,6 +23,10 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import json
 import streamlit.components.v1 as components
+import pdfplumber
+import re
+from io import BytesIO
+import time
 
 st.set_page_config(
     page_title="eQUEST Utilities",
@@ -191,7 +195,7 @@ def main():
         if st.button("MEPC Tool", key="mep_calculator"): #Queries
             st.session_state.script_choice = "mepc"
     with col16:
-        if st.button("HAP Tool", key="HAP_calculator"): #Queries
+        if st.button("HAP Parser", key="HAP_calculator"): #Queries
             st.session_state.script_choice = "hap"
     
             
@@ -391,8 +395,29 @@ def main():
             with col2:
                 uploaded_proposed_file = st.file_uploader("Upload Proposed SIM File", type=["sim"], accept_multiple_files=False)
             if uploaded_0_degree is not None and uploaded_proposed_file is not None:
-                if st.button("Generate Reports"):
-                    eflh.generateSchedules(uploaded_0_degree, uploaded_proposed_file)
+                cols = st.columns(8)
+                with cols[0]:
+                    holiday = st.number_input("Holiday", min_value=0, max_value=365, value=11, key="holiday")
+                with cols[1]:
+                    monday = st.number_input("Monday", min_value=0, max_value=365, value=50, key="monday")
+                with cols[2]:
+                    tuesday = st.number_input("Tuesday", min_value=0, max_value=365, value=50, key="tuesday")
+                with cols[3]:
+                    wednesday = st.number_input("Wednesday", min_value=0, max_value=365, value=50, key="wednesday")
+                with cols[4]:
+                    thursday = st.number_input("Thursday", min_value=0, max_value=365, value=50, key="thursday")
+                with cols[5]:
+                    friday = st.number_input("Friday", min_value=0, max_value=365, value=50, key="friday")
+                with cols[6]:
+                    saturday = st.number_input("Saturday", min_value=0, max_value=365, value=52, key="saturday")
+                with cols[7]:
+                    sunday = st.number_input("Sunday", min_value=0, max_value=365, value=52, key="sunday")
+                tot_days = (holiday + monday + tuesday + wednesday + thursday + friday + saturday + sunday)
+                if tot_days == 365:
+                    if st.button("Generate Reports"):
+                        eflh.generateSchedules(uploaded_0_degree, uploaded_proposed_file, holiday, monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+                else:
+                    st.error("❌ Total days must equal 365.")
         else:
             st.info("Please upload at least the 0° and Proposed SIM files to proceed.")
        
@@ -463,14 +488,86 @@ def main():
     
     elif st.session_state.script_choice == "hap":
         st.markdown("""
-        <h4 style="color:blue;">🔧 HAP Tool</h4>
-        <b>Purpose:</b> Excel output generated from the “SPACE Input sheet.RTF”.
+        <h4 style="color:blue;">🔧 HAP Parser</h4>
+        <b>Purpose:</b> Excel output generated from the “.RTF” and ".PDF" files.
         The file contains Space Name, Floor Area (ft²), Average Ceiling Height (ft), Occupancy (People), Wattage (Overhead Lighting), Wattage (Task Lighting), Wattage (Electrical Equipment)
         """, unsafe_allow_html=True)
-        uploaded_files = st.file_uploader("Upload RTF files", type="RTF", accept_multiple_files=False)
-        if uploaded_files is not None:
-            if st.button("Generate Reports"):
-                hap.main(uploaded_files)
+        file_type = st.radio("Select file type", ["PDF", "RTF"])
+
+        uploaded_pdf = None
+        uploaded_file_rtf = None
+        if file_type == "PDF":
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                uploaded_pdf = st.file_uploader("Upload PDF file", type="pdf", accept_multiple_files=False)
+            with col2:
+                start_page = st.number_input("Start Page", min_value=0, max_value=600, value=0, key="start")
+            with col3:
+                end_page = st.number_input("End Page", min_value=0, max_value=600, value=0, key="end")
+        elif file_type == "RTF":
+            uploaded_file_rtf = st.file_uploader("Upload RTF file", type="rtf", accept_multiple_files=False)
+
+        def show_loading_overlay(message="Processing..."):
+            st.markdown(
+                f"""
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                            background-color: rgba(0,0,0,0.6); color: white;
+                            display: flex; justify-content: center; align-items: center;
+                            font-size: 24px; z-index: 9999;">
+                    {message}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        # Step 3: Handle file and button
+        if uploaded_file_rtf is not None:
+            if st.button("Generate Report"):
+                hap.main(uploaded_file_rtf)
+        if uploaded_pdf is not None:
+            if st.button("Generate Report"):
+                with st.spinner("Running EFLH calculation... Please wait."):
+                    extracted_data = []
+                    with pdfplumber.open(uploaded_pdf) as pdf:
+                        for i in range(start_page, end_page + 1):
+                            if i >= len(pdf.pages):
+                                st.warning(f"Page {i} is out of range. Skipping.")
+                                continue
+                            page = pdf.pages[i]
+                            text = page.extract_text()
+                            if not text:
+                                continue
+                            matches = re.findall(r'((?:[A-Z0-9-]+-[^\n]+)\n.*?)(?=\n[A-Z0-9-]+-|$)', text, re.DOTALL)
+                            for match in matches:
+                                values = hap.extract_values(match)
+                                if values[0]:
+                                    extracted_data.append(values)
+
+                    if extracted_data:
+                        df = pd.DataFrame(extracted_data, columns=[
+                            "Room Name", "Floor Area (m²)", "Ceiling Height (m)", "Building Weight (kg/m²)",
+                            "OA Req. 1 (L/s/person)", "OA Req. 2 (L/s·m²)", "Occupancy", "Sensible (W/person)",
+                            "Latent (W/person)", "Lighting", "Light-Unit", "Task Lighting", "Task-Light-Unit",
+                            "Electrical Equip.", "Electrical-Equip-Unit"
+                        ])
+
+                        # Remove unwanted rows
+                        df = df[~df["Room Name"].astype(str).str.contains("U-Value", na=False)]
+
+                        st.success("✅ Data extracted successfully!")
+                        st.dataframe(df, use_container_width=True)
+
+                        # Provide download button
+                        output = BytesIO()
+                        df.to_excel(output, index=False, sheet_name="Extracted Data")
+                        st.download_button(
+                            label="📥 Export xlsx",
+                            data=output.getvalue(),
+                            file_name="Space_Input_Pages.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                    else:
+                        st.warning("No room data found in the selected pages.")
 
     elif st.session_state.script_choice == "exe":
         st.markdown("""
