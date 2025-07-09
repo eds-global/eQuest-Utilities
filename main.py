@@ -347,7 +347,7 @@ def main():
 
         csv_file = r'MEP_Calculator/tables/MEP Calculator.csv'
         df = pd.read_csv(csv_file)
-        st.markdown('<hr style="border:1px solid black">', unsafe_allow_html=True)
+        # st.markdown('<hr style="border:1px solid black">', unsafe_allow_html=True)
         
         # if uploaded_proposed_file is not None and uploaded_0_degree is not None:
         if analysis_option == "Performance Outputs":
@@ -418,8 +418,8 @@ def main():
                         eflh.generateSchedules(uploaded_0_degree, uploaded_proposed_file, holiday, monday, tuesday, wednesday, thursday, friday, saturday, sunday)
                 else:
                     st.error("❌ Total days must equal 365.")
-        else:
-            st.info("Please upload at least the 0° and Proposed SIM files to proceed.")
+        # else:
+        #     st.info("Please upload at least the 0° and Proposed SIM files to proceed.")
        
     elif st.session_state.script_choice == "reference":
         st.markdown("""
