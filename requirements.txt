@@ -10,3 +10,4 @@ openpyxl
 plotly
 plotly.express
 xlsxwriter
+pdfplumber
