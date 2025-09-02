@@ -4,6 +4,7 @@ import streamlit as st
 import tempfile
 from zipfile import ZipFile
 from INP_Parser.src_inp import hvac_system
+import re
 
 def get_report_and_save(report_function, inp_path, file_suffix):
     try:

@@ -2,6 +2,7 @@ import os
 import streamlit as st
 import tempfile
 from zipfile import ZipFile
+import re
 from SIM_Parser.src_sim import lv_b, ls_c, lv_d, pv_a, sv_a, beps, bepu, lvd_summary, sva_zone, ps_e, ps_f
 
 def get_report_and_save(report_function, sim_path, file_suffix):
@@ -41,7 +42,7 @@ def main(uploaded_file):
             (ps_e.get_PSE_report, 'PSE.csv', 'pse'),
             (ps_f.get_PSF_report, 'PSF.csv', 'psf')
         ]
-
+        
         for report_function, file_name, suffix in report_functions:
             file_path = get_report_and_save(report_function, sim_path, suffix)
             if file_path:

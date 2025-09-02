@@ -11,7 +11,7 @@ from streamlit_lottie import st_lottie
 from BaselineAutomation import baselineAuto
 from ScheduleGenerator import schedule_v01
 from ScheduleGenerator import sheduls_analytics
-from MEP_Calculator import ps_e, eflh
+from MEP_Calculator import ps_e, eflh, loads
 from MEP_Calculator import lv_d
 from q import qa
 from Happ import hap
@@ -63,19 +63,6 @@ button_style = """
     </style>
 """
 st.markdown(button_style, unsafe_allow_html=True)
-
-# Define CSS style with text-shadow effect for the heading
-heading_style = """
-    <style>
-    .heading-with-shadow {
-        text-align: left;
-        color: red;
-        text-shadow: 0px 8px 4px rgba(255, 255, 255, 0.4);
-        background-color: white;
-    }
-</style>
-"""
-st.markdown(heading_style, unsafe_allow_html=True)
 def main(): 
     card_button_style = """
         <style>
@@ -322,105 +309,159 @@ def main():
     elif st.session_state.script_choice == "mepc":
         st.markdown("""
         <h4 style="color:red;">♻️ MEPC Tool</h4>
-        <b>Purpose:</b>The MEP Calculator is a tool designed to support energy-efficient building projects, including LEED-certified initiatives. It helps update and analyze MEP performance values using simulation files. 
-        Evaluate performance outputs such as Lighting, Shading & Fenestration, and Energy End-Use metrics.<br><br>
+        Please upload your <b>.SIM files</b> generated from <i>eQUEST</i>.<br>
+        🔹 Upload <b>all four baseline orientations</b> (0°, 90°, 180°, 270°) <b>plus the proposed file</b>.<br>
+        🔹 For <b>Lighting</b> and <b>Process Load</b> evaluations, only the <b>0° baseline</b> and the <b>proposed file</b> are required.<br><br>
         """, unsafe_allow_html=True)
-        st.markdown("""<h6 style="color:red;">🔴 Select Calculator Type</h6>""", unsafe_allow_html=True)
-        # analysis_option = st.radio("Choose the type of analysis to perform:", 
-        #                         ("Performance Outputs", "Shading and Fenestration", "Lighting"))
-        if "analysis_option" not in st.session_state:
-            st.session_state.analysis_option = None
 
-        col1, col2, col3 = st.columns(3)
+
+        col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
-            if st.button("Performance Output"):
-                st.session_state.analysis_option = "Performance Outputs"
+            uploaded_0_degree = st.file_uploader("Upload 0° SIM File", type=["sim"], accept_multiple_files=False)
         with col2:
-            if st.button("Shade & Fenes."):
-                st.session_state.analysis_option = "Shading and Fenestration"
+            uploaded_90_degree = st.file_uploader("Upload 90° SIM File", type=["sim"], accept_multiple_files=False)
         with col3:
-            if st.button("Schedules"):
-                st.session_state.analysis_option = "Schedules"
-        if st.session_state.analysis_option:
-            st.write(f"You selected: **{st.session_state.analysis_option}**")
-        analysis_option = st.session_state.analysis_option
-
-        csv_file = r'MEP_Calculator/tables/MEP Calculator.csv'
-        df = pd.read_csv(csv_file)
-        # st.markdown('<hr style="border:1px solid black">', unsafe_allow_html=True)
+            uploaded_180_degree = st.file_uploader("Upload 180° SIM File", type=["sim"], accept_multiple_files=False)
+        with col4:
+            uploaded_270_degree = st.file_uploader("Upload 270° SIM File", type=["sim"], accept_multiple_files=False)
+        with col5:
+            uploaded_proposed_file = st.file_uploader("Upload a Proposed SIM file", type=["sim"], accept_multiple_files=False)
         
-        # if uploaded_proposed_file is not None and uploaded_0_degree is not None:
-        if analysis_option == "Performance Outputs":
-            col1, col2, col3, col4, col5 = st.columns(5)
-            with col1:
-                uploaded_0_degree = st.file_uploader("Upload 0° SIM File", type=["sim"], accept_multiple_files=False)
-            with col2:
-                uploaded_90_degree = st.file_uploader("Upload 90° SIM File", type=["sim"], accept_multiple_files=False)
-            with col3:
-                uploaded_180_degree = st.file_uploader("Upload 180° SIM File", type=["sim"], accept_multiple_files=False)
-            with col4:
-                uploaded_270_degree = st.file_uploader("Upload 270° SIM File", type=["sim"], accept_multiple_files=False)
-            with col5:
-                uploaded_proposed_file = st.file_uploader("Upload a Proposed SIM file", type=["sim"], accept_multiple_files=False)
+        if uploaded_0_degree is not None and uploaded_proposed_file is not None:
+            sim_file_for_use1 = uploaded_0_degree
+            sim_file_proposed_for_use1 = uploaded_proposed_file
+            databse = r'MEP_Calculator/database/eQUEST_database.csv'
+            db = pd.read_csv(databse)
+            summary_df = loads.getProcessLoads(db, sim_file_proposed_for_use1, sim_file_for_use1)
 
-            if uploaded_90_degree is not None and uploaded_180_degree is not None and uploaded_270_degree is not None:
-                if st.button("Generate Reports"):
-                    st.markdown(
-                        """
-                        <div style='background-color:#fff3cd;padding:10px;border-left:6px solid #ffecb5;'>
-                            <strong>Disclaimer:</strong> <br>1. This tool is used when completing baseline results for each of the four building orientations.<br>
-                            2. This Tool looks at PS-E Meters and assumes all <strong>electric</strong> meters currently.
-                            Units used are <strong>kWh</strong> (Consumption) and <strong>kW</strong> (Demand).
-                        </div><br>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                    ps_e.get_END_USE_Proposed(df, uploaded_0_degree, uploaded_90_degree, uploaded_180_degree, uploaded_270_degree, uploaded_proposed_file)
-            else:
-                st.info("Please upload all 4 rotation SIM files for Performance Outputs.")
-        elif analysis_option == "Shading and Fenestration":
-            col1, col2 = st.columns(2)
-            with col1:
-                uploaded_0_degree = st.file_uploader("Upload a Baseline SIM File", type=["sim"], accept_multiple_files=False)
-            with col2:
-                uploaded_proposed_file = st.file_uploader("Upload Proposed SIM File", type=["sim"], accept_multiple_files=False)
-            if uploaded_0_degree is not None and uploaded_proposed_file is not None:
-                if st.button("Generate Reports"):
-                    lv_d.generateFenestration(uploaded_0_degree, uploaded_proposed_file)
+            if summary_df is not None:
+                st.markdown("""<h6 style="color:red;">🔴 Select Calculator</h6>""", unsafe_allow_html=True)
+                if "analysis_option" not in st.session_state:
+                    st.session_state.analysis_option = None
 
-        elif analysis_option == "Schedules":
-            col1, col2 = st.columns(2)
-            with col1:
-                uploaded_0_degree = st.file_uploader("Upload a Baseline SIM File", type=["sim"], accept_multiple_files=False)
-            with col2:
-                uploaded_proposed_file = st.file_uploader("Upload Proposed SIM File", type=["sim"], accept_multiple_files=False)
-            if uploaded_0_degree is not None and uploaded_proposed_file is not None:
-                cols = st.columns(8)
-                with cols[0]:
-                    holiday = st.number_input("Holiday", min_value=0, max_value=365, value=11, key="holiday")
-                with cols[1]:
-                    monday = st.number_input("Monday", min_value=0, max_value=365, value=50, key="monday")
-                with cols[2]:
-                    tuesday = st.number_input("Tuesday", min_value=0, max_value=365, value=50, key="tuesday")
-                with cols[3]:
-                    wednesday = st.number_input("Wednesday", min_value=0, max_value=365, value=50, key="wednesday")
-                with cols[4]:
-                    thursday = st.number_input("Thursday", min_value=0, max_value=365, value=50, key="thursday")
-                with cols[5]:
-                    friday = st.number_input("Friday", min_value=0, max_value=365, value=50, key="friday")
-                with cols[6]:
-                    saturday = st.number_input("Saturday", min_value=0, max_value=365, value=52, key="saturday")
-                with cols[7]:
-                    sunday = st.number_input("Sunday", min_value=0, max_value=365, value=52, key="sunday")
-                tot_days = (holiday + monday + tuesday + wednesday + thursday + friday + saturday + sunday)
-                if tot_days == 365:
+                col1, col2, col3, col4, col5 = st.columns(5)
+                with col1:
+                    if st.button("Performance Output"):
+                        st.session_state.analysis_option = "Performance Outputs"
+                with col2:
+                    if st.button("Shade & Fenes."):
+                        st.session_state.analysis_option = "Shading and Fenestration"
+                with col3:
+                    if st.button("Schedules"):
+                        st.session_state.analysis_option = "Schedules"
+                with col4:
+                    if st.button("Lighting"):
+                        st.session_state.analysis_option = "lighting"
+                with col5:
+                    if st.button("Process Loads"):
+                        st.session_state.analysis_option = "Process Loads"
+
+            if st.session_state.analysis_option:
+                st.write(f"You selected: **{st.session_state.analysis_option}**")
+                analysis_option = st.session_state.analysis_option
+
+                csv_file = r'MEP_Calculator/tables/MEP Calculator.csv'
+                databse = r'MEP_Calculator/database/eQUEST_database.csv'
+                df = pd.read_csv(csv_file)
+                db = pd.read_csv(databse)
+
+                if analysis_option == "Process Loads":
+                    st.markdown("##### 📊 Final Summary")
+                    st.markdown("""
+                        When transferring data to the **MEPC Sheet**, copy the first **‘Building Type’** column the second blank **‘Building Type’** column and then paste them into the **‘Building Type’** cells in MEPC sheet.  
+                        """)
+                    # st.write(summary_df)
+                    if "EQUIP(WATT / SOFT)" in summary_df.columns:
+                        summary_df.drop(columns=["LIGHTS(WATT / SOFT)"], inplace=True, errors="ignore")
+                        summary_df.drop(columns=["LIGHTS(WATT / SOFT) (Baseline)"], inplace=True, errors="ignore")
+                        summary_df.insert(summary_df.columns.get_loc("Building Type")+1, "Building Type ", "")
+                        
+                        result = round((summary_df["AREA(SQFT)"] * summary_df["EQUIP(WATT / SOFT)"]).sum() / 1000, 2)
+                        new_row = {
+                            "Building Type": "Total power modeled using space by space method(kW)",
+                            "Baseline Modeled Identically": result
+                        }
+
+                        summary_df = pd.concat([summary_df, pd.DataFrame([new_row])], ignore_index=True)
+                        summary_df = summary_df.rename(columns={"EQUIP(WATT / SOFT)": "Equipment Power Density(W/ft²)", "AREA(SQFT)": "Area(ft²)"})
+                        st.dataframe(summary_df)
+                    elif "EQUIP(WATT / SOFT)" not in summary_df.columns:
+                        st.dataframe(summary_df)
+
+                elif analysis_option == "Performance Outputs":
                     if st.button("Generate Reports"):
-                        eflh.generateSchedules(uploaded_0_degree, uploaded_proposed_file, holiday, monday, tuesday, wednesday, thursday, friday, saturday, sunday)
-                else:
-                    st.error("❌ Total days must equal 365.")
-        # else:
-        #     st.info("Please upload at least the 0° and Proposed SIM files to proceed.")
-       
+                        st.markdown(
+                            """
+                            <div style='background-color:#fff3cd;padding:10px;border-left:6px solid #ffecb5;'>
+                                <strong>Disclaimer:</strong> <br>1. This tool is used when completing baseline results for each of the four building orientations.<br>
+                                2. This Tool looks at PS-E Meters and assumes all <strong>electric</strong> meters currently.
+                                Units used are <strong>kWh</strong> (Consumption) and <strong>kW</strong> (Demand).
+                            </div><br>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                        ps_e.get_END_USE_Proposed(df, uploaded_0_degree, uploaded_90_degree, uploaded_180_degree, uploaded_270_degree, uploaded_proposed_file)
+                    else:
+                        st.info("Please upload all 4 rotation SIM files for Performance Outputs.")
+                elif analysis_option == "Shading and Fenestration":
+                    if uploaded_0_degree is not None and uploaded_proposed_file is not None:
+                        if st.button("Generate Reports"):
+                            lv_d.generateFenestration(uploaded_0_degree, uploaded_proposed_file)
+
+                elif analysis_option == "Schedules":
+                    if uploaded_0_degree is not None and uploaded_proposed_file is not None:
+                        cols = st.columns(8)
+                        with cols[0]:
+                            holiday = st.number_input("Holiday", min_value=0, max_value=365, value=11, key="holiday")
+                        with cols[1]:
+                            monday = st.number_input("Monday", min_value=0, max_value=365, value=50, key="monday")
+                        with cols[2]:
+                            tuesday = st.number_input("Tuesday", min_value=0, max_value=365, value=50, key="tuesday")
+                        with cols[3]:
+                            wednesday = st.number_input("Wednesday", min_value=0, max_value=365, value=50, key="wednesday")
+                        with cols[4]:
+                            thursday = st.number_input("Thursday", min_value=0, max_value=365, value=50, key="thursday")
+                        with cols[5]:
+                            friday = st.number_input("Friday", min_value=0, max_value=365, value=50, key="friday")
+                        with cols[6]:
+                            saturday = st.number_input("Saturday", min_value=0, max_value=365, value=52, key="saturday")
+                        with cols[7]:
+                            sunday = st.number_input("Sunday", min_value=0, max_value=365, value=52, key="sunday")
+                        tot_days = (holiday + monday + tuesday + wednesday + thursday + friday + saturday + sunday)
+                        if tot_days == 365:
+                            if st.button("Generate Reports"):
+                                eflh.generateSchedules(uploaded_0_degree, uploaded_proposed_file, holiday, monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+                        else:
+                            st.error("❌ Total days must equal 365.")
+
+                elif analysis_option == "lighting":
+                    st.markdown("##### 📊 Final Summary")
+                    summary_df.drop(columns=["EQUIP(WATT / SOFT)"], inplace=True, errors="ignore")
+                    summary_df.drop(columns=["Baseline Modeled Identically"], inplace=True, errors="ignore")
+                    
+                    summary_df = summary_df.rename(columns={"LIGHTS(WATT / SOFT)": "Design LPD(W/ft²)", "AREA(SQFT)": "Area(ft²)"})
+                    if "Design LPD(W/ft²)" in summary_df.columns:
+                        summary_df["Modeled Design LPD(W/ft²)"] = summary_df["Design LPD(W/ft²)"]
+                        # Reorder columns (swap A and B)
+                        cols = list(summary_df.columns) 
+                        a_idx, b_idx = cols.index("Design LPD(W/ft²)"), cols.index("LIGHTS(WATT / SOFT) (Baseline)")
+                        cols[a_idx], cols[b_idx] = cols[b_idx], cols[a_idx]
+                        summary_df = summary_df[cols]
+                        summary_df = summary_df.rename(columns={"LIGHTS(WATT / SOFT) (Baseline)": "Maximum Allowance(W/ft²)"})
+                        summary_df.insert(3, "Total Baseline LPD Allowance(W/ft²)", summary_df["Maximum Allowance(W/ft²)"])
+                        last4_grouped = summary_df.copy()
+                        last4_grouped.columns = pd.MultiIndex.from_tuples([
+                            ("", "Building Type"),
+                            ("", "Area(ft²)"),
+                            ("Baseline", "Maximum Allowance(W/ft²)"),
+                            ("Baseline", "Total Baseline LPD Allowance(W/ft²)"),
+                            ("Proposed", "Design LPD(W/ft²)"),
+                            ("Proposed", "Modeled Design LPD(W/ft²)")
+                        ])
+                        st.dataframe(last4_grouped)
+                    elif "Design LPD(W/ft²)" not in summary_df.columns:
+                        st.dataframe(summary_df)
+                        
     elif st.session_state.script_choice == "reference":
         st.markdown("""
         <h4 style="color:green;">🏡 IGBC Green Homes </h4>
