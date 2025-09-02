@@ -97,259 +97,253 @@ def getProcessLoads(database, proposed, baseline):
     lv_d_proposed = lv_d_proposed[['SPACE', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)']]
 
     ############################ STEP 1 ############################
-    # 1. Check if lengths match
-    if len(lv_d_baseline) != len(lv_d_proposed):
-        st.error("Space List does not match 😕")
-        return None
-    else:
-        # 2. Merge DataFrames on 'SPACE'
-        merged_df = lv_d_baseline.merge(
-            lv_d_proposed,
-            on='SPACE',
-            suffixes=('_baseline', '_proposed'),
-            how='outer'
-        )
+    merged_df = lv_d_baseline.merge(
+        lv_d_proposed,
+        on='SPACE',
+        suffixes=('_baseline', '_proposed'),
+        how='outer'
+    )
 
-        # 3. Check matching
-        merged_df['Mark'] = merged_df.apply(
-            lambda row: "Yes" if (
-                row['AREA(SQFT)_baseline'] == row['AREA(SQFT)_proposed'] and
-                row['EQUIP(WATT / SOFT)_baseline'] == row['EQUIP(WATT / SOFT)_proposed']
-            ) else "No",
-            axis=1
-        )
+    # 3. Check matching
+    merged_df['Mark'] = merged_df.apply(
+        lambda row: "Yes" if (
+            row['AREA(SQFT)_baseline'] == row['AREA(SQFT)_proposed'] and
+            row['EQUIP(WATT / SOFT)_baseline'] == row['EQUIP(WATT / SOFT)_proposed']
+        ) else "No",
+        axis=1
+    )
 
-        # Create Code 3
-        database['Code 3'] = database['Code'].astype(str).str[:2].str.capitalize() + \
-                             database['Space type'].astype(str).str[:2].str.capitalize()
+    # Create Code 3
+    database['Code 3'] = database['Code'].astype(str).str[:2].str.capitalize() + \
+                            database['Space type'].astype(str).str[:2].str.capitalize()
 
-        lv_b_baseline = lv_d_baseline.dropna(subset=['SPACE'])
-        filtered_data = database[['Building_Type', 'Code 3']].dropna()
+    lv_b_baseline = lv_d_baseline.dropna(subset=['SPACE'])
+    filtered_data = database[['Building_Type', 'Code 3']].dropna()
 
-        summary_rows = []
-        for btype in filtered_data['Building_Type'].unique():
-            btype_filtered = filtered_data[filtered_data['Building_Type'] == btype]
-            matched_rows = []
+    summary_rows = []
+    for btype in filtered_data['Building_Type'].unique():
+        btype_filtered = filtered_data[filtered_data['Building_Type'] == btype]
+        matched_rows = []
 
-            for _, row in lv_b_baseline.iterrows():
-                space_val = str(row['SPACE'])
-                for _, code_row in btype_filtered.iterrows():
-                    code_3 = str(code_row['Code 3'])
-                    if code_3 in space_val:
-                        matched_rows.append({
-                            'AREA(SQFT)': row['AREA(SQFT)'],
-                            'EQUIP(WATT / SOFT)': row['EQUIP(WATT / SOFT)'],
-                            'LIGHTS(WATT / SOFT)': row['LIGHTS(WATT / SOFT)']
-                        })
-                        break
-
-            if matched_rows:
-                matched_df = pd.DataFrame(matched_rows)
-                total_area = matched_df['AREA(SQFT)'].sum()
-                weighted_equip = (matched_df['AREA(SQFT)'] * matched_df['EQUIP(WATT / SOFT)']).sum() / total_area
-                weighted_light = (matched_df['AREA(SQFT)'] * matched_df['LIGHTS(WATT / SOFT)']).sum() / total_area
-                summary_rows.append({
-                    'Building Type': btype,
-                    'AREA(SQFT)': total_area,
-                })
-
-        if (merged_df['Mark'] == 'Yes').all():
-            if summary_rows:
-                summary_df = pd.DataFrame(summary_rows)
-
-                # Add TOTAL row
-                grand_total_area = summary_df['AREA(SQFT)'].sum()
-                total_row = pd.DataFrame([{
-                    'Building Type': 'TOTAL',
-                    'AREA(SQFT)': grand_total_area,
-                }])
-                summary_df = pd.concat([summary_df, total_row], ignore_index=True)
-            else:
-                st.warning("No matches found for any building type.")
-
-            #############################################################
-            # --- Prepare matched and unmatched spaces ---
-            database['Code 3'] = (
-                database['Code'].astype(str).str[:2].str.capitalize() +
-                database['Space type'].astype(str).str[:2].str.capitalize()
-            )
-
-            lv_b_proposed = lv_d_proposed.dropna(subset=['SPACE'])
-            filtered_data = database[['Building_Type', 'Code 3']].dropna()
-
-            matched_spaces, unmatched_spaces = [], []
-            for _, row in lv_b_proposed.iterrows():
-                space_val = str(row['SPACE'])
-                matched_type = None
-                for _, code_row in filtered_data.iterrows():
-                    if str(code_row['Code 3']) in space_val:
-                        matched_type = code_row['Building_Type']
-                        break
-                if matched_type:
-                    matched_spaces.append({
-                        'SPACE': space_val,
-                        'Building Type': matched_type,
+        for _, row in lv_b_baseline.iterrows():
+            space_val = str(row['SPACE'])
+            for _, code_row in btype_filtered.iterrows():
+                code_3 = str(code_row['Code 3'])
+                if code_3 in space_val:
+                    matched_rows.append({
                         'AREA(SQFT)': row['AREA(SQFT)'],
                         'EQUIP(WATT / SOFT)': row['EQUIP(WATT / SOFT)'],
                         'LIGHTS(WATT / SOFT)': row['LIGHTS(WATT / SOFT)']
                     })
-                else:
-                    unmatched_spaces.append({
-                        'SPACE': space_val,
-                        'AREA(SQFT)': row['AREA(SQFT)'],
-                        'EQUIP(WATT / SOFT)': row['EQUIP(WATT / SOFT)'],
-                        'LIGHTS(WATT / SOFT)': row['LIGHTS(WATT / SOFT)']
-                    })
+                    break
 
-            matched_df = pd.DataFrame(matched_spaces) if matched_spaces else pd.DataFrame(
-                columns=['SPACE', 'Building Type', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)'])
+        if matched_rows:
+            matched_df = pd.DataFrame(matched_rows)
+            total_area = matched_df['AREA(SQFT)'].sum()
+            weighted_equip = (matched_df['AREA(SQFT)'] * matched_df['EQUIP(WATT / SOFT)']).sum() / total_area
+            weighted_light = (matched_df['AREA(SQFT)'] * matched_df['LIGHTS(WATT / SOFT)']).sum() / total_area
+            summary_rows.append({
+                'Building Type': btype,
+                'AREA(SQFT)': total_area,
+            })
 
-            st.markdown("##### ⚠️ Map Unmatched Spaces")
-            if unmatched_spaces:
-                with st.form("mapping_form"):
-                    col1, col2 = st.columns([2.8, 1.2])
-                    with col1:
-                        unmatched_df = pd.DataFrame(unmatched_spaces).reset_index(drop=True)
-
-                        if "mapped_spaces" not in st.session_state:
-                            st.session_state.mapped_spaces = set()
-                        if "mapped_df" not in st.session_state:
-                            st.session_state.mapped_df = pd.DataFrame(
-                                columns=["SPACE", "AREA(SQFT)", "EQUIP(WATT / SOFT)", "LIGHTS(WATT / SOFT)", "Building Type"]
-                            )
-                            
-                        selected_spaces = []
-                        cols = st.columns(4)
-                        for i, row in unmatched_df.iterrows():
-                            col = cols[i % 4]
-                            is_disabled = row['SPACE'] in st.session_state.mapped_spaces
-                            # 
-                            checked = col.checkbox(
-                                f"{row['SPACE']}",
-                                key=f"check_{i}",
-                                disabled=is_disabled
-                            )
-                            if checked and not is_disabled:
-                                selected_spaces.append(row['SPACE'])
-
-                        building_types_list = database['Building_Type'].dropna().unique()
-
-                    with col2:
-                        selected_btype = st.selectbox(
-                            "Building Type",
-                            options=sorted(building_types_list, key=str.lower),
-                            label_visibility="collapsed"
-                        )
-                        submit = st.form_submit_button("✅ Map Selected")
-                        if submit:
-                            for space in selected_spaces:
-                                st.session_state.mapped_spaces.add(space)
-                                row_data = unmatched_df[unmatched_df['SPACE'] == space].copy()
-                                row_data["Building Type"] = selected_btype
-                                st.session_state.mapped_df = pd.concat(
-                                    [st.session_state.mapped_df, row_data], ignore_index=True
-                                )
-                            st.success(f"Mapped {len(selected_spaces)} spaces to '{selected_btype}'")
-
-                            # for space in selected_spaces:
-                            #     st.session_state.mapped_spaces.add(space)
-                            #     row_data = unmatched_df[unmatched_df['SPACE'] == space].copy()
-                            #     row_data["Building Type"] = selected_btype
-                            #     st.session_state.mapped_df = pd.concat(
-                            #         [st.session_state.mapped_df, row_data], ignore_index=True
-                            #     )
-                            # st.success(f"Mapped {len(selected_spaces)} spaces to '{selected_btype}'")
-
-            # --- Build final_df always (even if no new mapping) ---
-            if not st.session_state.mapped_df.empty:
-                final_df = pd.concat([matched_df, st.session_state.mapped_df], ignore_index=True)
-            else:
-                final_df = matched_df.copy()
-
-            # --- Build summary_df ---
-            summary_rows = []
-            mark = 'Yes'
-            for btype in final_df['Building Type'].unique():
-                temp_df = final_df[final_df['Building Type'] == btype]
-                area = temp_df['AREA(SQFT)'].sum()
-                weighted_equip = (temp_df['AREA(SQFT)'] * temp_df['EQUIP(WATT / SOFT)']).sum() / area
-                weighted_light = (temp_df['AREA(SQFT)'] * temp_df['LIGHTS(WATT / SOFT)']).sum() / area
-
-                baseline_spaces = lv_d_baseline[lv_d_baseline['SPACE'].isin(temp_df['SPACE'])]
-                if not baseline_spaces.empty:
-                    baseline_light = (
-                        (baseline_spaces['AREA(SQFT)'] * baseline_spaces['LIGHTS(WATT / SOFT)']).sum()
-                        / baseline_spaces['AREA(SQFT)'].sum()
-                    )
-                else:
-                    baseline_light = None
-
-                summary_rows.append({
-                    'Building Type': btype,
-                    'AREA(SQFT)': area,
-                    'EQUIP(WATT / SOFT)': round(weighted_equip, 2),
-                    'LIGHTS(WATT / SOFT)': round(weighted_light, 2),
-                    'LIGHTS(WATT / SOFT) (Baseline)': round(baseline_light, 2) if baseline_light is not None else None,
-                    'Baseline Modeled Identically': mark
-                })
-
+    if (merged_df['Mark'] == 'Yes').all():
+        if summary_rows:
             summary_df = pd.DataFrame(summary_rows)
-            total_area = summary_df['AREA(SQFT)'].sum()
-            total_equip = (summary_df['AREA(SQFT)'] * summary_df['EQUIP(WATT / SOFT)']).sum() / total_area
-            total_light = (summary_df['AREA(SQFT)'] * summary_df['LIGHTS(WATT / SOFT)']).sum() / total_area
-            total_light_baseline = (summary_df['AREA(SQFT)'] * summary_df['LIGHTS(WATT / SOFT) (Baseline)']).sum() / total_area
+
+            # Add TOTAL row
+            grand_total_area = summary_df['AREA(SQFT)'].sum()
             total_row = pd.DataFrame([{
                 'Building Type': 'TOTAL',
-                'AREA(SQFT)': total_area,
-                'EQUIP(WATT / SOFT)': round(total_equip, 2),
-                'LIGHTS(WATT / SOFT)': round(total_light, 2),
-                'LIGHTS(WATT / SOFT) (Baseline)': round(total_light_baseline, 2)
+                'AREA(SQFT)': grand_total_area,
             }])
             summary_df = pd.concat([summary_df, total_row], ignore_index=True)
-
-            # --- Display table with delete buttons ---
-            st.markdown("##### 📝 Mapped Spaces: Review & Edit")
-
-            table_data = summary_df.to_dict('records')
-
-            # Table Header
-            header_cols = st.columns([1, 0.5, 0.5, 0.5])
-            for col, header in zip(header_cols, ["Building Type", "AREA (SQFT)", "EQUIP (WATT / SQFT)", "Action"]):
-                col.markdown(f"**{header}**")
-
-            # Table Rows
-            for i, row in enumerate(table_data):
-                row_cols = st.columns([1, 0.5, 0.5, 0.5])
-                row_cols[0].write(row['Building Type'])
-                row_cols[1].write(f"{row['AREA(SQFT)']:.2f}")
-                row_cols[2].write(f"{row['EQUIP(WATT / SOFT)']:.2f}")
-
-                if row['Building Type'] != "TOTAL":
-                    # ✅ Only allow delete if this building type exists in mapped_df
-                    if row['Building Type'] in st.session_state.mapped_df['Building Type'].tolist():
-                        if row_cols[3].button("🗑️ Delete", key=f"del_{i}"):
-                            st.session_state.mapped_df = st.session_state.mapped_df[
-                                st.session_state.mapped_df['Building Type'] != row['Building Type']
-                            ]
-                            removed_spaces = final_df[final_df['Building Type'] == row['Building Type']]['SPACE'].tolist()
-                            for space in removed_spaces:
-                                st.session_state.mapped_spaces.discard(space)
-                            st.rerun()
-                    else:
-                        # 🔒 Show info instead of blank (for auto-matched)
-                        row_cols[3].markdown("🔒 Auto-matched", unsafe_allow_html=True)
-                else:
-                    row_cols[3].write("")
-
-            # --- Show matched spaces detail ---
-            with st.expander("✅ See List of Matched Spaces"):   # CHANGE title
-                if not final_df.empty:
-                    st.markdown("##### 📋 Current Matched Spaces (Auto + Manual)")
-                    st.dataframe(final_df)
-                else:
-                    st.info("No matched spaces found yet.")
-
-            return summary_df
-
         else:
-            st.error("Baseline didn't Modeled Identically")
+            st.warning("No matches found for any building type.")
+
+        #############################################################
+        # --- Prepare matched and unmatched spaces ---
+        database['Code 3'] = (
+            database['Code'].astype(str).str[:2].str.capitalize() +
+            database['Space type'].astype(str).str[:2].str.capitalize()
+        )
+
+        lv_b_proposed = lv_d_proposed.dropna(subset=['SPACE'])
+        filtered_data = database[['Building_Type', 'Code 3']].dropna()
+
+        matched_spaces, unmatched_spaces = [], []
+        for _, row in lv_b_proposed.iterrows():
+            space_val = str(row['SPACE'])
+            matched_type = None
+            for _, code_row in filtered_data.iterrows():
+                if str(code_row['Code 3']) in space_val:
+                    matched_type = code_row['Building_Type']
+                    break
+            if matched_type:
+                matched_spaces.append({
+                    'SPACE': space_val,
+                    'Building Type': matched_type,
+                    'AREA(SQFT)': row['AREA(SQFT)'],
+                    'EQUIP(WATT / SOFT)': row['EQUIP(WATT / SOFT)'],
+                    'LIGHTS(WATT / SOFT)': row['LIGHTS(WATT / SOFT)']
+                })
+            else:
+                unmatched_spaces.append({
+                    'SPACE': space_val,
+                    'AREA(SQFT)': row['AREA(SQFT)'],
+                    'EQUIP(WATT / SOFT)': row['EQUIP(WATT / SOFT)'],
+                    'LIGHTS(WATT / SOFT)': row['LIGHTS(WATT / SOFT)']
+                })
+
+        matched_df = pd.DataFrame(matched_spaces) if matched_spaces else pd.DataFrame(
+            columns=['SPACE', 'Building Type', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)'])
+
+        st.markdown("##### ⚠️ Map Unmatched Spaces")
+        if unmatched_spaces:
+            with st.form("mapping_form"):
+                col1, col2 = st.columns([2.8, 1.2])
+                with col1:
+                    unmatched_df = pd.DataFrame(unmatched_spaces).reset_index(drop=True)
+
+                    if "mapped_spaces" not in st.session_state:
+                        st.session_state.mapped_spaces = set()
+                    if "mapped_df" not in st.session_state:
+                        st.session_state.mapped_df = pd.DataFrame(
+                            columns=["SPACE", "AREA(SQFT)", "EQUIP(WATT / SOFT)", "LIGHTS(WATT / SOFT)", "Building Type"]
+                        )
+                        
+                    selected_spaces = []
+                    cols = st.columns(4)
+                    for i, row in unmatched_df.iterrows():
+                        col = cols[i % 4]
+                        is_disabled = row['SPACE'] in st.session_state.mapped_spaces
+                        # 
+                        checked = col.checkbox(
+                            f"{row['SPACE']}",
+                            key=f"check_{i}",
+                            disabled=is_disabled
+                        )
+                        if checked and not is_disabled:
+                            selected_spaces.append(row['SPACE'])
+
+                    building_types_list = database['Building_Type'].dropna().unique()
+
+                with col2:
+                    selected_btype = st.selectbox(
+                        "Building Type",
+                        options=sorted(building_types_list, key=str.lower),
+                        label_visibility="collapsed"
+                    )
+                    submit = st.form_submit_button("✅ Map Selected")
+                    if submit:
+                        for space in selected_spaces:
+                            st.session_state.mapped_spaces.add(space)
+                            row_data = unmatched_df[unmatched_df['SPACE'] == space].copy()
+                            row_data["Building Type"] = selected_btype
+                            st.session_state.mapped_df = pd.concat(
+                                [st.session_state.mapped_df, row_data], ignore_index=True
+                            )
+                        st.success(f"Mapped {len(selected_spaces)} spaces to '{selected_btype}'")
+
+                        # for space in selected_spaces:
+                        #     st.session_state.mapped_spaces.add(space)
+                        #     row_data = unmatched_df[unmatched_df['SPACE'] == space].copy()
+                        #     row_data["Building Type"] = selected_btype
+                        #     st.session_state.mapped_df = pd.concat(
+                        #         [st.session_state.mapped_df, row_data], ignore_index=True
+                        #     )
+                        # st.success(f"Mapped {len(selected_spaces)} spaces to '{selected_btype}'")
+
+        # --- Build final_df always (even if no new mapping) ---
+        if not st.session_state.mapped_df.empty:
+            final_df = pd.concat([matched_df, st.session_state.mapped_df], ignore_index=True)
+        else:
+            final_df = matched_df.copy()
+
+        # --- Build summary_df ---
+        summary_rows = []
+        mark = 'Yes'
+        for btype in final_df['Building Type'].unique():
+            temp_df = final_df[final_df['Building Type'] == btype]
+            area = temp_df['AREA(SQFT)'].sum()
+            weighted_equip = (temp_df['AREA(SQFT)'] * temp_df['EQUIP(WATT / SOFT)']).sum() / area
+            weighted_light = (temp_df['AREA(SQFT)'] * temp_df['LIGHTS(WATT / SOFT)']).sum() / area
+
+            baseline_spaces = lv_d_baseline[lv_d_baseline['SPACE'].isin(temp_df['SPACE'])]
+            if not baseline_spaces.empty:
+                baseline_light = (
+                    (baseline_spaces['AREA(SQFT)'] * baseline_spaces['LIGHTS(WATT / SOFT)']).sum()
+                    / baseline_spaces['AREA(SQFT)'].sum()
+                )
+            else:
+                baseline_light = None
+
+            summary_rows.append({
+                'Building Type': btype,
+                'AREA(SQFT)': area,
+                'EQUIP(WATT / SOFT)': round(weighted_equip, 2),
+                'LIGHTS(WATT / SOFT)': round(weighted_light, 2),
+                'LIGHTS(WATT / SOFT) (Baseline)': round(baseline_light, 2) if baseline_light is not None else None,
+                'Baseline Modeled Identically': mark
+            })
+
+        summary_df = pd.DataFrame(summary_rows)
+        total_area = summary_df['AREA(SQFT)'].sum()
+        total_equip = (summary_df['AREA(SQFT)'] * summary_df['EQUIP(WATT / SOFT)']).sum() / total_area
+        total_light = (summary_df['AREA(SQFT)'] * summary_df['LIGHTS(WATT / SOFT)']).sum() / total_area
+        total_light_baseline = (summary_df['AREA(SQFT)'] * summary_df['LIGHTS(WATT / SOFT) (Baseline)']).sum() / total_area
+        total_row = pd.DataFrame([{
+            'Building Type': 'TOTAL',
+            'AREA(SQFT)': total_area,
+            'EQUIP(WATT / SOFT)': round(total_equip, 2),
+            'LIGHTS(WATT / SOFT)': round(total_light, 2),
+            'LIGHTS(WATT / SOFT) (Baseline)': round(total_light_baseline, 2)
+        }])
+        summary_df = pd.concat([summary_df, total_row], ignore_index=True)
+
+        # --- Display table with delete buttons ---
+        st.markdown("##### 📝 Mapped Spaces: Review & Edit")
+
+        table_data = summary_df.to_dict('records')
+
+        # Table Header
+        header_cols = st.columns([1, 0.5, 0.5, 0.5])
+        for col, header in zip(header_cols, ["Building Type", "AREA (SQFT)", "EQUIP (WATT / SQFT)", "Action"]):
+            col.markdown(f"**{header}**")
+
+        # Table Rows
+        for i, row in enumerate(table_data):
+            row_cols = st.columns([1, 0.5, 0.5, 0.5])
+            row_cols[0].write(row['Building Type'])
+            row_cols[1].write(f"{row['AREA(SQFT)']:.2f}")
+            row_cols[2].write(f"{row['EQUIP(WATT / SOFT)']:.2f}")
+
+            if row['Building Type'] != "TOTAL":
+                # ✅ Only allow delete if this building type exists in mapped_df
+                if row['Building Type'] in st.session_state.mapped_df['Building Type'].tolist():
+                    if row_cols[3].button("🗑️ Delete", key=f"del_{i}"):
+                        st.session_state.mapped_df = st.session_state.mapped_df[
+                            st.session_state.mapped_df['Building Type'] != row['Building Type']
+                        ]
+                        removed_spaces = final_df[final_df['Building Type'] == row['Building Type']]['SPACE'].tolist()
+                        for space in removed_spaces:
+                            st.session_state.mapped_spaces.discard(space)
+                        st.rerun()
+                else:
+                    # 🔒 Show info instead of blank (for auto-matched)
+                    row_cols[3].markdown("🔒 Auto-matched", unsafe_allow_html=True)
+            else:
+                row_cols[3].write("")
+
+        # --- Show matched spaces detail ---
+        with st.expander("✅ See List of Matched Spaces"):   # CHANGE title
+            if not final_df.empty:
+                st.markdown("##### 📋 Current Matched Spaces (Auto + Manual)")
+                st.dataframe(final_df)
+            else:
+                st.info("No matched spaces found yet.")
+
+        return summary_df
+
+    else:
+        st.error("Baseline didn't Modeled Identically")
