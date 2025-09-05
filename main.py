@@ -111,18 +111,21 @@ def main():
     if 'script_choice' not in st.session_state:
         st.session_state.script_choice = "about"  # Set default to "about"
             
-    logo_url = "https://equest-utilities-edsglobal.streamlit.app/"
     logo_image_path = "images/eQcb_142.gif"
     col1, col2, col3 = st.columns([1,1,0.5])
     with col1:
-        st.image(logo_image_path, width=80)
+        st.image(logo_image_path, width=60)
     with col2:
-        # st.markdown("<h1 class='heading-with-shadow'>eQUEST Utilities</h1>", unsafe_allow_html=True)
-        st.markdown("# :rainbow[eQUEST Utilities]")
+        st.markdown("## :rainbow[eQUEST Utilities]")
     with col3:
-        st.image("images/EDSlogo.jpg", width=120)
+        st.image("images/EDSlogo.jpg", width=100)
 
-    st.markdown('<hr style="border:1px solid black">', unsafe_allow_html=True)
+    st.markdown(
+        """<div style='margin-top:-46px;'>
+               <hr style="border:1px solid red">
+           </div>""",
+        unsafe_allow_html=True
+    )
     st.markdown("""
         <style>
         .stButton button {
@@ -180,7 +183,8 @@ def main():
             st.session_state.script_choice = "cal"
     with col15:
         if st.button("MEPC Tool", key="mep_calculator"): #Queries
-            st.session_state.script_choice = "mepc"
+            st.switch_page("pages/mepc.py")
+            # st.session_state.script_choice = "mepc"
     with col16:
         if st.button("HAP Parser", key="HAP_calculator"): #Queries
             st.session_state.script_choice = "hap"
@@ -210,7 +214,7 @@ def main():
             📄 <b style="color:red;">HAP Tool:</b> A parser for .RTF files to get Excel output generated from the “SPACE Input sheet.RTF”. <br>
             """, unsafe_allow_html=True)
         with col2:
-            st.image("https://www.filepicker.io/api/file/ISb3e710QSmh95AYIdef", width=560)
+            st.image(logo_image_path, width=410)
         st.markdown(""" Navigate through the tools using the buttons above to get started. Each tool is designed to simplify 
             specific tasks related to eQUEST project management. We hope these utilities make your workflow smoother 
             and more productive.
@@ -313,7 +317,6 @@ def main():
         🔹 Upload <b>all four baseline orientations</b> (0°, 90°, 180°, 270°) <b>plus the proposed file</b>.<br>
         🔹 For <b>Lighting</b> and <b>Process Load</b> evaluations, only the <b>0° baseline</b> and the <b>proposed file</b> are required.<br><br>
         """, unsafe_allow_html=True)
-
 
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
