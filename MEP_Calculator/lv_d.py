@@ -118,6 +118,22 @@ def get_SVA_report(name):
         
     return sva_zone
 
+def safe_get_uvalue(df, azimuth, column='AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'):
+    if 'AZIMUTH' not in df.columns:
+        print("⚠️ Column 'AZIMUTH' not found. Available:", df.columns)
+        return None
+    if column not in df.columns:
+        print(f"⚠️ Column '{column}' not found. Available:", df.columns)
+        return None
+    
+    # Normalize strings only if they are strings
+    rows = df.loc[df['AZIMUTH'].astype(str).str.strip().str.upper() == azimuth.upper(), column]
+    if rows.empty:
+        print(f"⚠️ No rows found for azimuth='{azimuth}'. Unique AZIMUTH values:", df['AZIMUTH'].unique())
+        return None
+
+    return rows.iloc[0]
+
 def generateFenestration(baseline, proposed):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
         temp_file.write(baseline.read())
@@ -132,17 +148,17 @@ def generateFenestration(baseline, proposed):
     sv_a_baseline = get_SVA_report(temp_file_path_baseline)
     sv_a_proposed = get_SVA_report(temp_file_path_proposed)
     
-    north_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'NORTH', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    south_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'SOUTH', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    east_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'EAST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    west_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'WEST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    north_east_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'NORTH-EAST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    south_east_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'SOUTH-EAST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    south_west_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'SOUTH-WEST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    north_west_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'NORTH-WEST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    roof_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'ROOF', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    allWalls_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'ALL WALLS', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-    undergrnd_wind_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'UNDERGRND', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
+    north_wind_u      = safe_get_uvalue(lv_d_baseline, 'NORTH')
+    south_wind_u      = safe_get_uvalue(lv_d_baseline, 'SOUTH')
+    east_wind_u       = safe_get_uvalue(lv_d_baseline, 'EAST')
+    west_wind_u       = safe_get_uvalue(lv_d_baseline, 'WEST')
+    north_east_wind_u = safe_get_uvalue(lv_d_baseline, 'NORTH-EAST')
+    south_east_wind_u = safe_get_uvalue(lv_d_baseline, 'SOUTH-EAST')
+    south_west_wind_u = safe_get_uvalue(lv_d_baseline, 'SOUTH-WEST')
+    north_west_wind_u = safe_get_uvalue(lv_d_baseline, 'NORTH-WEST')
+    roof_wind_u       = safe_get_uvalue(lv_d_baseline, 'ROOF')
+    allWalls_wind_u   = safe_get_uvalue(lv_d_baseline, 'ALL WALLS')
+    undergrnd_wind_u  = safe_get_uvalue(lv_d_baseline, 'UNDERGRND')
 
     north_wall_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'NORTH', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
     south_wall_u = lv_d_baseline.loc[lv_d_baseline['AZIMUTH'] == 'SOUTH', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]

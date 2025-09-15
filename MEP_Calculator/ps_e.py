@@ -355,7 +355,7 @@ def get_END_USE_Proposed(df, zero, ninty, oneeighty, twoseventy, proposed):
             
         pse_df = get_PSE_report(temp_file_path)
         bepu_df = get_BEPU_report(temp_file_path)
-        # st.write(pse_df)
+        st.write(pse_df)
         pse_df_int_light_kwh = pse_df['LIGHTS'][0]
         pse_df_int_light_kw = pse_df['LIGHTS'][1]
         pse_df_ext_light_kwh = pse_df['EXT USAGE'][0]

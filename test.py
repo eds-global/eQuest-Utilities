@@ -337,12 +337,12 @@ def main():
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 40px;
+                height: 10px;
                 background-color: white;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 30px;
+                gap: 10px;
                 border-bottom: 1px solid #ddd;
                 z-index: 1000;
             }

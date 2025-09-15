@@ -6,8 +6,102 @@ import xlwings as xw
 import re
 import streamlit as st
 import tempfile
+import numpy as np
 
 warnings.filterwarnings("ignore")
+
+def get_SVA_Zone_Report(name):
+    with open(name) as f:
+        flist = f.readlines()
+
+        sva_counts = [] 
+        for num, line in enumerate(flist, 0):
+            if 'SV-A' in line:
+                sva_counts.append(num)
+            if 'SS-D' in line:
+                numend = num
+        numstart = sva_counts[0] 
+        sva_rpt = flist[numstart:numend]
+        
+        sva_str = []
+        for line in sva_rpt:
+            if (('zn' in line and '.' in line) or ('Zn' in line and '.' in line) or
+                ('Zone' in line and '.' in line) or ('zone' in line and '.' in line)):
+                sva_str.append(line)
+
+        result = []  
+        for line in sva_str:
+            sva_list = []
+            splitter = line.split()
+            space_name = " ".join(splitter[:-11])
+            sva_list=splitter[-11:]
+            sva_list.insert(0,space_name)
+            result.append(sva_list)
+
+        sva_zone = pd.DataFrame(result)
+        sva_zone.columns = ['ZONE_NAME', 'SUPPLY-FLOW(CFM)', 'EXHAUST-FLOW(CFM)',
+                        'FAN(KW)', 'MINIMUM_FLOW(FRAC)', 'OUTISIDE-AIR-FLOW(CFM)',
+                        'COOLING_CAPACITY(KBTU/HR)', 'SENSIBLE(FRAC)', 'EXTRACTION-RATE(KBTU/HR)',
+                        'HEATING_CAPACITY(KBTU/HR)', 'ADDITION-RATE(KBTU/HR)', 'ZONE-MULT']
+        sva_zone.index.name = name
+        value_before_backslash = ''.join(reversed(name)).split("\\")[0]
+        name1 = ''.join(reversed(value_before_backslash))
+        name = name1.rsplit(".", 1)[0]
+        # sva_zone.insert(0, 'RUNNAME', name)
+        # Dropping rows where 'ZONE_NAME' column does not contain specified substrings
+        sva_zone = sva_zone[sva_zone['ZONE_NAME'].str.contains(r'\bzn\b|\bZn\b|\bZone\b|\bzone\b|\b\b')]
+        # Dropping rows where 'SUPPLY-FLOW(CFM)' column does not contain specified substrings
+        sva_zone = sva_zone[sva_zone['SUPPLY-FLOW(CFM)'].str.contains(r'\b\b')]
+        # Replace non-numeric values with NaN in 'SUPPLY-FLOW(CFM)'
+        sva_zone['SUPPLY-FLOW(CFM)'] = pd.to_numeric(sva_zone['SUPPLY-FLOW(CFM)'], errors='coerce')
+        # Adding 'SPACES' column based on 'SUPPLY-FLOW(CFM)' condition
+        sva_zone['SPACES'] = np.where(sva_zone['SUPPLY-FLOW(CFM)'] == 0, 'UnConditioned', 'Conditioned')
+        
+    return sva_zone
+
+def get_SVA_Report(name):
+    with open(name) as f:
+        flist = f.readlines()
+
+        sva_count = [] 
+        for num, line in enumerate(flist, 0):
+            if 'SV-A' in line:
+                sva_count.append(num)
+            if 'SS-D' in line:
+                numend = num
+        numstart = sva_count[0] 
+        sva_rpt = flist[numstart:numend]
+        
+        sva_str = []
+        for line in sva_rpt:
+            if (('SUM' in line and '.' in line) or ('PTAC' in line and '.' in line and 'WEATHER' not in line) or
+                ('VAVS' in line and '.' in line) or ('PIU' in line and '.' in line) or 
+                ('FC' in line and 'zn' not in line and 'Zn' not in line and '.' in line) or 
+                ('UVT' in line and '.' in line) or
+                ('PSZ' in line and '.' in line) or ('PMZS' in line and '.' in line)):
+                sva_str.append(line)
+
+        result = []  
+        for line in sva_str:
+            sva_list = []
+            splitter = line.split()
+            space_name = " ".join(splitter[:-10])
+            sva_list=splitter[-10:]
+            sva_list.insert(0,space_name)
+            result.append(sva_list)
+
+        sva_df = pd.DataFrame(result)
+        sva_df.columns = ['SYSTEM_TYPE', 'ALTITUDE_FACTOR', 'FLOOR_AREA(SQFT)',
+                        'MAX_PEOPLE', 'OUTSIDE_AIR_RATIO', 'COOLING_CAPACITY(KBTU/HR)',
+                        'SENSIBLE(SHR)', 'HEATING_CAPACITY(KBTU/HR)', 'COOLING_EIR(BTU/BTU)', 'HEATING_EIR(BTU/BTU)', 'HEAT_PUMP(SUPP_HEAT)(KBTU/HR)']
+        sva_df['FLOOR_AREA(SQFT)'] = pd.to_numeric(sva_df['FLOOR_AREA(SQFT)'])
+        sva_df.index.name = name
+        value_before_backslash = ''.join(reversed(name)).split("\\")[0]
+        name1 = ''.join(reversed(value_before_backslash))
+        name = name1.rsplit(".", 1)[0]
+        # sva_df.insert(0, 'RUNNAME', name)
+        
+    return sva_df
 
 def get_LVB_Report(name):
     with open(name) as f:
@@ -91,6 +185,8 @@ def getProcessLoads(database, proposed, baseline):
     # Extract baseline load data
     lv_d_proposed = get_LVB_Report(temp_file_path_proposed)
     lv_d_baseline = get_LVB_Report(temp_file_path_baseline)
+    sv_a_baseline = get_SVA_Report(temp_file_path_baseline)
+    sv_a_zone_df = get_SVA_Zone_Report(temp_file_path_baseline)
 
     # Keep necessary columns only
     lv_d_baseline = lv_d_baseline[['SPACE', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)']]
@@ -198,7 +294,7 @@ def getProcessLoads(database, proposed, baseline):
         matched_df = pd.DataFrame(matched_spaces) if matched_spaces else pd.DataFrame(
             columns=['SPACE', 'Building Type', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)'])
 
-        st.markdown("##### ⚠️ Map Unmatched Spaces")
+        st.markdown("###### ⚠️ Map Unmatched Spaces")
         if unmatched_spaces:
             with st.form("mapping_form"):
                 col1, col2 = st.columns([2.8, 1.2])
@@ -302,7 +398,7 @@ def getProcessLoads(database, proposed, baseline):
         summary_df = pd.concat([summary_df, total_row], ignore_index=True)
 
         # --- Display table with delete buttons ---
-        st.markdown("##### 📝 Mapped Spaces: Review & Edit")
+        st.markdown("###### 📝 Mapped Spaces: Review & Edit")
 
         table_data = summary_df.to_dict('records')
 
@@ -343,7 +439,7 @@ def getProcessLoads(database, proposed, baseline):
             else:
                 st.info("No matched spaces found yet.")
 
-        return summary_df
+        return summary_df, sv_a_baseline, sv_a_zone_df
 
     else:
         st.error("Baseline didn't Modeled Identically")
