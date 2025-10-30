@@ -44,46 +44,41 @@ def get_system_path(building_type, heat_type, area, floor):
     # Extracting paths of construction_library_systems
     construction_library_systems_paths = [entry["construction_library_systems"] for entry in data]
 
-    # Find the entry with the specified climate zone
-    if building_type == 0: # residential
-        if heat_type == 0: # Hybrid/Fossil
-            return construction_library_systems_paths[0] # 1
-        else: # Electric
-            return construction_library_systems_paths[1] # 2
-            
-    elif building_type == 1:
+    # --- Decision Logic ---
+    if building_type == 0:  # Residential
+        if heat_type == 0:
+            return construction_library_systems_paths[0]  # 1
+        else:
+            return construction_library_systems_paths[1]  # 2
+
+    elif building_type == 1:  # Commercial or similar
         if area <= 25000 and floor <= 3:
             if heat_type == 0:
-                return construction_library_systems_paths[2] # 3
+                return construction_library_systems_paths[2]  # 3
             else:
-                return construction_library_systems_paths[3] # 4
-        elif area > 25000 and area < 150000: # Building type 1 with area less than 150000
+                return construction_library_systems_paths[3]  # 4
+
+        elif area > 25000 and area < 150000:
             if floor <= 5:
                 if heat_type == 0:
-                    return construction_library_systems_paths[4] # 5
+                    return construction_library_systems_paths[4]  # 5
                 else:
-                    return construction_library_systems_paths[5] # 6
-        elif area<= 25000:
-            if floor == 4 or floor == 5: # Additional condition for floor 4 or 5
-                if heat_type == 0:
-                    return construction_library_systems_paths[4] # 5
-                else:
-                    return construction_library_systems_paths[5] # 6
-        else: # Building type 1 with area greater than or equal to 150000
-            if floor > 5:
-                if heat_type == 0:
-                    return construction_library_systems_paths[6] # 7
-                else:
-                    return construction_library_systems_paths[7] # 8
-            else:
-                if heat_type == 0:
-                    return construction_library_systems_paths[6] # 7
-                else:
-                    return construction_library_systems_paths[7] # 8
-                
+                    return construction_library_systems_paths[5]  # 6
 
-    # If the climate zone is not found, return None
-    return None
+        elif area <= 25000 and (floor == 4 or floor == 5):
+            if heat_type == 0:
+                return construction_library_systems_paths[4]  # 5
+            else:
+                return construction_library_systems_paths[5]  # 6
+
+        else:  # area >= 150000 or floors > 5
+            if heat_type == 0:
+                return construction_library_systems_paths[6]  # 7
+            else:
+                return construction_library_systems_paths[7]  # 8
+
+    # --- Default Fallback ---
+    return construction_library_systems_paths[0]
 
 # function to insert matarials, layers and construction at specific position
 def insert_material_data(climate_zone_file, amenity_data):

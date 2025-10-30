@@ -12,10 +12,10 @@ def get_report_and_save(report_function, sim_path, file_suffix):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as temp_file:
             report.to_csv(temp_file.name, index=False)
             temp_file_path = temp_file.name
-        st.success(f"{file_suffix} Report Generated!")
+        st.markdown(f"<span style='color:green;'>✅ {file_suffix} Report Generated!</span>", unsafe_allow_html=True)
         return temp_file_path
-    except Exception as e:
-        st.success(f" {file_suffix} does not exist!")
+    except Exception:
+        st.markdown(f"<span style='color:red;'>❌ {file_suffix} does not exist!</span>", unsafe_allow_html=True)
         return None
 
 def main(uploaded_file):

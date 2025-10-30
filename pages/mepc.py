@@ -157,9 +157,9 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
         '<h5 style="color:red;">✪ Shading & Fenestration</h5>',
         unsafe_allow_html=True
     )
-    if uploaded_0_degree is not None and uploaded_proposed_file is not None:
-        if st.button("Generate Reports"):
-            lv_d.generateFenestration(uploaded_0_degree, uploaded_proposed_file)
+    # if uploaded_0_degree is not None and uploaded_proposed_file is not None:
+    #     if st.button("Generate Reports"):
+    #         lv_d.generateFenestration(uploaded_0_degree, uploaded_proposed_file)
 
     # -------------------------
     # Section 4 - Calculator
@@ -330,6 +330,7 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     num_cols = len(sv_a_df)
     for i in range(1, num_cols + 1):
         df[f"Baseline - {i}"] = 0
+    for i in range(1, num_cols + 1):
         df[f"Proposed - {i}"] = 0
 
     # --- Fill Row 1 (Cooling capacity) ---
@@ -411,65 +412,52 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
 
     # Column config
     column_config = {
-        "Units": st.column_config.SelectboxColumn(
-            "Units",
-            options=[
-                "kBtuh", "Btuh", "tons", "EER", "kW", "SEER", "IEER",
-                "IPLV", "kBtu/h", "HSPF", "COP", "AFUE", "%Et", "%Ec", "°F", "°C"
-            ]
-        )
+        "Units": st.column_config.SelectboxColumn("Units", options=["kBtuh", "Btuh", "tons", "EER", "kW", "SEER", "IEER", "IPLV", "kBtu/h", "HSPF", "COP", "AFUE", "%Et", "%Ec", "°F", "°C"])
     }
-
-    # Baseline/Proposed columns → NumberColumn (not TextColumn)
     for i in range(1, num_cols + 1):
-        column_config[f"Baseline - {i}"] = st.column_config.NumberColumn(
-            f"Baseline - {i}", step=1.0, format="%.2f"
-        )
-        column_config[f"Proposed - {i}"] = st.column_config.NumberColumn(
-            f"Proposed - {i}", step=1.0, format="%.2f"
-        )
+        column_config[f"Baseline - {i}"] = st.column_config.TextColumn(f"Baseline - {i}")
+        column_config[f"Proposed - {i}"] = st.column_config.NumberColumn(f"Proposed - {i}", step=1, default=0)
+    
+    # --- Update Total columns ---
+    baseline_cols = [col for col in df.columns if col.startswith("Baseline - ") and col != "Baseline - Total"]
+    proposed_cols = [col for col in df.columns if col.startswith("Proposed - ") and col != "Proposed - Total"]
 
-    # Ensure numeric dtype before editor
-    for col in df.columns:
-        if "Baseline" in col or "Proposed" in col:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+    for idx in range(len(df)):
+        # Only sum numeric columns, ignore text
+        baseline_vals = pd.to_numeric(df.loc[idx, baseline_cols], errors="coerce")
+        proposed_vals = pd.to_numeric(df.loc[idx, proposed_cols], errors="coerce")
 
-    editable_cols = [col for col in df.columns if "Total" not in col]
+        if baseline_vals.notna().any():
+            df.at[idx, "Baseline - Total"] = baseline_vals.sum()
+        if proposed_vals.notna().any():
+            df.at[idx, "Proposed - Total"] = proposed_vals.sum()
 
-    # Editable table
+    def highlight_cell(x):
+        df_styler = pd.DataFrame('', index=x.index, columns=x.columns)
+        df_styler.loc[1, "Baseline - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[2, "Baseline - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[1, "Proposed - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[2, "Proposed - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[3, "Baseline - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[3, "Proposed - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[5, "Baseline - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[5, "Proposed - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[6, "Baseline - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[6, "Proposed - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[7, "Baseline - Total"] = 'background-color: lightgrey; color: black;'
+        df_styler.loc[7, "Proposed - Total"] = 'background-color: lightgrey; color: black;'
+        return df_styler
+
+    df = df.style.apply(highlight_cell, axis=None)
+
+    # Editable table in Streamlit
     edited_df = st.data_editor(
-        df[editable_cols],
+        df,
         column_config=column_config,
         hide_index=True,
         use_container_width=True
-    )
+    ) 
 
-    # Conversion
-    converted_df = edited_df.copy()
-    for idx, row in edited_df.iterrows():
-        unit = row["Units"]
-        for col in [c for c in edited_df.columns if "Baseline" in c or "Proposed" in c]:
-            try:
-                val = float(row[col])
-            except:
-                continue
-
-            if unit == "tons":
-                converted_df.at[idx, col] = round(val / 12000, 2)
-            elif unit == "kBtuh":
-                converted_df.at[idx, col] = round(val, 2)
-            elif unit == "Btuh":
-                converted_df.at[idx, col] = round(val * 1000, 2)
-
-    # ---- Add Totals ----
-    baseline_cols = [c for c in converted_df.columns if c.startswith("Baseline - ") and c != "Baseline - Total"]
-    proposed_cols = [c for c in converted_df.columns if c.startswith("Proposed - ") and c != "Proposed - Total"]
-
-    converted_df["Baseline - Total"] = converted_df[baseline_cols].sum(axis=1, skipna=True)
-    converted_df["Proposed - Total"] = converted_df[proposed_cols].sum(axis=1, skipna=True)
-
-    st.write("Converted Values:")
-    st.dataframe(converted_df, use_container_width=True)
 
 
 

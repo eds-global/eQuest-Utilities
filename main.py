@@ -806,7 +806,7 @@ st.markdown(
             </div>
             <div class="additional-content">
                 <h4>Contact Us</h4>
-                <p>Email: info@edsglobal.com | Phone: +123 456 7890</p>
+                <p>Email: info@edsglobal.com | Phone: 91 . 11 . 4056 8633</p>
                 <p>Follow us on social media for the latest updates and news.</p>
             </div>
         </div>

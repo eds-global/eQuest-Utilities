@@ -74,6 +74,10 @@ def UpdateWWR(sim_file, amenity_data):
                                 new_height = existing_height * height_factor
                                 amenity_data[line_index] = re.sub(r'(HEIGHT\s*=\s*\S+)', 'HEIGHT           = {}'.format(round(new_height, 2)), line)
         else:
-            st.success("WWR is <= 0.4")
+            message_placeholder = st.empty()
+            all_msgs = []
+            all_msgs.append("<span style='color:green;'>✅ WWR is <= 0.4</span>")
+            message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+            # st.write("WWR is <= 0.4")
     
     return amenity_data

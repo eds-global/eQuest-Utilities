@@ -32,12 +32,24 @@ def getInp(input_inp_path, sim_file_path, input_climate, input_building_type, in
     # Get climate and system paths
     climate_path = update_MLC.get_climate_path(input_climate, input_building_type)
     system_path = update_MLC.get_system_path(input_building_type, heat_type, input_area, number_floor)
+
+    # Create placeholder just once at the start
+    message_placeholder = st.empty()
+    all_msgs = []
     
     # Convert paths to absolute paths
     climate_path = os.path.abspath(climate_path)
     system_path = os.path.abspath(system_path)
-    st.success(f"Climate INP: {climate_path}")
-    st.success(f"System data: {system_path}")
+
+    # Extract just the filenames
+    climate_file = os.path.basename(climate_path)
+    system_file = os.path.basename(system_path)
+
+    # Inline display
+    all_msgs.append(f"<span style='color:blue;'>📁 Climate INP:</span> {climate_file}")
+    all_msgs.append(f"<span style='color:blue;'>📁 System Data:</span> {system_file}")
+
+    message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
     inp_path = inp_path.replace('\n', '\r\n')
     
     if os.path.isfile(inp_path):
@@ -46,46 +58,64 @@ def getInp(input_inp_path, sim_file_path, input_climate, input_building_type, in
         modify_dataframe = updateFreshAir.updateBCVentilation(zone_space_df, inp_path, sim_path)
         modify_freshAi = freshAir.updateFresh(modify_dataframe, inp_path)
         modify_freshAir = freshAir.remove_OAs(modify_freshAi)
-        
+        all_msgs.append("<span style='color:green;'>✅ Fresh Air Updated</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+
         ######################################################## MLC INSERTION #############################################
         mat_data = update_MLC.insert_material_data(climate_path, modify_freshAir)
-        st.success("Inserted Material Data")
+        all_msgs.append("<span style='color:green;'>✅ Inserted Material Data</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+
         lyr_data = update_MLC.insert_layers_data(climate_path, mat_data)
-        st.success("Inserted Layer Data")
+        all_msgs.append("<span style='color:green;'>✅ Inserted Layer Data</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+
         const_data = update_MLC.insert_const_data(climate_path, lyr_data)
-        st.success("Construction Data Inserted")
-        
+        all_msgs.append("<span style='color:green;'>✅ Construction Data Inserted</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+
         ######################################################## W,R,U Updated ##############################################
         update_ConstName = insertConst.update_external_wall_roof_undergrnd(const_data)
-        st.success("In MLC:- Construction name based on Wall, roof and underground is updated")
+        all_msgs.append("<span style='color:green;'>✅ Construction names updated</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
 
         ######################################################## GLASS INSERTION #############################################
         updateGlass = insertGlass.update_glass(climate_path, update_ConstName)
-        st.success("Inserted Glass Data")
+        all_msgs.append("<span style='color:green;'>✅ Inserted Glass Data</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+
         updateGlassType = insertGlass.update_glass_type(climate_path, updateGlass)
-        st.success("Glass-Type Data is Updated by All Win")
+        all_msgs.append("<span style='color:green;'>✅ Glass-Type Data Updated</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
 
         ######################################################## WWR #########################################################
         updateWWR = wwr.UpdateWWR(sim_path, updateGlassType)
-        st.success("Updated WWR if ratio > 0.4")
+        all_msgs.append("<span style='color:green;'>✅ Updated WWR > 0.4</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
 
-        # ######################################################## HVAC #########################################################
+        ######################################################## HVAC #########################################################
         modifyHVAC = updateHVAC.HVAC_Modification(updateWWR)
-        st.success("HVAC_Updated (All System Deleted)")
+        all_msgs.append("<span style='color:green;'>✅ HVAC Updated</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+
         hvac_sys = HVAC_sys.systems(modifyHVAC, system_path)
-        st.success("Data Replaces HVAC")
+        all_msgs.append("<span style='color:green;'>✅ HVAC Data Replaced</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+
         value = system_path.split(".inp")[0][-1]
         if value in ['1', '2', '3', '4']:
             update_zone = HVAC_sys.modify_conditioned(hvac_sys, system_path)
-            st.success("Conditioned_zone updated")
+            all_msgs.append("<span style='color:green;'>✅ Conditioned Zone Updated</span>")
         else:
             update_zone = HVAC_sys.modify_floor(hvac_sys, system_path)
-            st.success("Floor updated")
-    
+            all_msgs.append("<span style='color:green;'>✅ Floor Updated</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
+
         ######################################################### LPD #########################################################
         modify_lpd = update_lpd.updateLPD(update_zone, sim_path)
-        st.success("LPD Updated")
-        st.success("FreshAir Updated!!")
+        all_msgs.append("<span style='color:green;'>✅ LPD Updated</span>")
+        all_msgs.append("<span style='color:green;'>✅ Fresh Air Updated!!</span>")
+        message_placeholder.markdown(" &nbsp; | &nbsp; ".join(all_msgs), unsafe_allow_html=True)
 
         # ######################################################### FRESH AIR ###################################################
         # zone_space_df = aa.zoneSpace(input_inp_path)
