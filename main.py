@@ -521,7 +521,8 @@ def main():
         if uploaded_files and reports_input:
             if st.button("Convert to PDF"):
                 # Clean up each report name
-                st.success("Multi-file processing is coming soon. For now, use the EXE for batches.")
+                sim_print.main(reports_input, uploaded_files)
+                # st.success("Multi-file processing is coming soon. For now, use the EXE for batches.")
        
     elif st.session_state.script_choice == "cal":
         st.markdown("""

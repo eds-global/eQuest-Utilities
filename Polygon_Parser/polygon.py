@@ -33,7 +33,7 @@ def extract_polygons(inp_file):
         # Store the line number of the first occurrence of 'Polygons'
         numstart = polygon_count[0] if polygon_count else None
         if not numstart:
-            print("No 'Polygons' section found in the file.")
+            # print("No 'Polygons' section found in the file.")
             return pd.DataFrame()  # Return an empty dataframe if no polygons section is found
 
         polygon_rpt = flist[numstart:numend]
@@ -58,11 +58,11 @@ def extract_polygons(inp_file):
         if current_polygon:
             polygon_data[current_polygon] = vertices  # Add the last polygon
 
-        print("Extracted Polygon Data:")
-        print(polygon_data)
+        # print("Extracted Polygon Data:")
+        # print(polygon_data)
    
         if not polygon_data:
-            print("No polygons data extracted.")
+            # print("No polygons data extracted.")
             return pd.DataFrame()
 
         max_vertices = max(len(vertices) for vertices in polygon_data.values())
@@ -94,39 +94,27 @@ def get_report_and_save(report_function, inp_path, file_suffix):
 
 def main(uploaded_file):
     if uploaded_file is not None:
-        try:
+        # try:
             # Create a temporary directory
-            with tempfile.TemporaryDirectory() as temp_dir:
-                inp_path = os.path.join(temp_dir, uploaded_file.name)
-                
-                # Write the uploaded file to the temporary directory
-                with open(inp_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                
-                # Generate reports
-                sys_report_path = get_report_and_save(hvac_system.get_HVAC_System_report, inp_path, 'Sys_INP')
-                zone_report_path = get_report_and_save(hvac_system.get_HVAC_Zone_report, inp_path, 'Zone_INP')
-                
-                if sys_report_path and zone_report_path:
-                    st.success("INP Parsed Successfully!!")
-                    
-                    # Create a zip file containing both reports
-                    zip_file_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}_reports.zip")
-                    with ZipFile(zip_file_path, 'w') as zipf:
-                        zipf.write(sys_report_path, os.path.basename(sys_report_path))
-                        zipf.write(zone_report_path, os.path.basename(zone_report_path))
-                    
-                    # Provide a download link for the zip file
-                    with open(zip_file_path, 'rb') as f:
-                        st.download_button(
-                            label="Download Reports",
-                            data=f,
-                            file_name=os.path.basename(zip_file_path),
-                            mime='application/zip'
-                        )
-
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            inp_path = os.path.join(temp_dir, uploaded_file.name)
+            
+            # Write the uploaded file to the temporary directory
+            with open(inp_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            # Generate reports
+            polygon_path = get_report_and_save(extract_polygons, inp_path, 'Polygon')
+            if polygon_path:
+                st.success("Polygon Parsed Successfully!!")
+                # Read the CSV file and make it downloadable directly
+                with open(polygon_path, 'rb') as f:
+                    st.download_button(
+                        label="Download Polygon CSV",
+                        data=f,
+                        file_name=os.path.basename(polygon_path),
+                        mime='text/csv'
+                    )
 
 if __name__ == "__main__":
     uploaded_file = st.file_uploader("Upload your INP file", type=["inp"])

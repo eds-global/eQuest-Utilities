@@ -186,6 +186,7 @@ def getProcessLoads(database, proposed, baseline):
     lv_d_proposed = get_LVB_Report(temp_file_path_proposed)
     lv_d_baseline = get_LVB_Report(temp_file_path_baseline)
     sv_a_baseline = get_SVA_Report(temp_file_path_baseline)
+    sv_a_proposed = get_SVA_Report(temp_file_path_proposed)
     sv_a_zone_df = get_SVA_Zone_Report(temp_file_path_baseline)
 
     # Keep necessary columns only
@@ -439,7 +440,7 @@ def getProcessLoads(database, proposed, baseline):
             else:
                 st.info("No matched spaces found yet.")
 
-        return summary_df, sv_a_baseline, sv_a_zone_df
+        return summary_df, sv_a_baseline, sv_a_zone_df, sv_a_proposed
 
     else:
         st.error("Baseline didn't Modeled Identically")

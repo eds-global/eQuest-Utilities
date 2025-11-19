@@ -8,6 +8,8 @@ import tempfile
 
 # Function to process and convert SIM files to PDF
 def main(reports, input_sim_files):
+    # st.write(reports)
+    # st.write(input_sim_files)
     try:
         readSim.extractReport(input_sim_files, reports)
     except FileNotFoundError:

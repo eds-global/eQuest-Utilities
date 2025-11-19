@@ -121,7 +121,7 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     csv_file = r'MEP_Calculator/tables/MEP Calculator.csv'
     df = pd.read_csv(csv_file)
     db = pd.read_csv(databse)
-    summary_df, sv_a_df, sv_a_zone_df, sv_a_df_p = loads.getProcessLoads(db, sim_file_proposed_for_use1, sim_file_for_use1)
+    summary_df, sv_a_df, sv_a_zone_df, sv_a_df_proposed = loads.getProcessLoads(db, sim_file_proposed_for_use1, sim_file_for_use1)
     
     # -------------------------
     # Section 2 - Unmatched
@@ -239,30 +239,47 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     # Section 7 - Air-Side HVAC
     # -------------------------
     st.markdown('<div id="hvac" class="section"></div>', unsafe_allow_html=True)
-    st.markdown("""<br><br><br>""", unsafe_allow_html=True)
+    st.markdown("""<br><br><br>""",unsafe_allow_html=True)
     st.markdown(
         '<h5 style="color:red;">✪ Air-Side HVAC System Schedule</h5>',
         unsafe_allow_html=True
     )
 
-    hvac_path = r'MEP_Calculator/database/HVAC_DB.xlsx'
-    df_units = pd.read_excel(hvac_path, sheet_name="UnitsMap")
+    hvac_path = r'MEP_Calculator/database/HVAC_DB.xlsx'  # adjust if needed
+    df = pd.read_excel(hvac_path, sheet_name="UnitsMap")
     system_map = pd.read_excel(hvac_path, sheet_name="SystemRanges")
+    # Dropdown options for Units column
+    unit_options = df['Units'].dropna().tolist()
+    # col1, col2 = st.columns([1, 3.1])
+    # with col1:
+    #     # Make two sub-columns: label and dropdown
+    #     label_col, dropdown_col = st.columns([1, 1.5])  # adjust ratio for label vs dropdown size
 
-    # static system number
+    #     # with label_col:
+    #     #     st.markdown("**Select System**")
+
+    #     # with dropdown_col:
+    #     #     systems = [f"System {i}" for i in range(1, 11)]
+    #     #     system = st.selectbox("", systems, key="unit_select", label_visibility="collapsed")
+    #     #     system = int(system.split()[-1])
+
     system = 2
     total_cooling = float(pd.to_numeric(sv_a_df['COOLING_CAPACITY(KBTU/HR)'], errors='coerce').sum())
     total_heating = float(pd.to_numeric(sv_a_df['HEATING_CAPACITY(KBTU/HR)'], errors='coerce').sum())
-
-    # Base table
+    total_cooling_p = float(pd.to_numeric(sv_a_df_proposed['COOLING_CAPACITY(KBTU/HR)'], errors='coerce').sum())
+    total_heating_p = float(pd.to_numeric(sv_a_df_proposed['HEATING_CAPACITY(KBTU/HR)'], errors='coerce').sum())
+    fan_control = "Variable Speed" if 5 <= system <= 8 else "Constant Speed"
+    st.write(sv_a_df)
+    st.write(sv_a_df_proposed)
+    # Define initial data (all rows from your sheet)
     data = [
-        {"Model Input Parameter": "Total cooling capacity", "Units": "kBtu/h", "Baseline - Total": 0, "Proposed - Total": 0},
-        {"Model Input Parameter": "* Table 6.8.1 Unitary Cooling (Systems 1 through 6)", "Units": "kBtu/h", "Baseline - Total": "", "Proposed - Total": ""},
-        {"Model Input Parameter": "Unitary cooling efficiency", "Units": "EER", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Total cooling capacity", "Units": "tons", "Baseline - Total": 0, "Proposed - Total": 0},
+        {"Model Input Parameter": "* Table 6.8.1 Unitary Cooling (Systems 1 through 6)", "Units": "tons", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Unitary cooling efficiency", "Units": "", "Baseline - Total": "", "Proposed - Total": ""},
         {"Model Input Parameter": "Unitary cooling part-load efficiency (if applicable)", "Units": "", "Baseline - Total": "", "Proposed - Total": ""},
         {"Model Input Parameter": "Total heating capacity", "Units": "kBtu/h", "Baseline - Total": 0, "Proposed - Total": 0},
         {"Model Input Parameter": "* Table 6.8.1 Unitary Heating (Systems 2, 3, 4, and 9)", "Units": "kBtu/h", "Baseline - Total": "", "Proposed - Total": ""},
-        {"Model Input Parameter": "Unitary heating efficiency", "Units": "EER", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Unitary heating efficiency", "Units": "", "Baseline - Total": "", "Proposed - Total": ""},
         {"Model Input Parameter": "* Fan control", "Units": "", "Baseline - Total": "", "Proposed - Total": ""},
         {"Model Input Parameter": "Supply airflow", "Units": "cfm", "Baseline - Total": 0, "Proposed - Total": 0},
         {"Model Input Parameter": "Outdoor airflow", "Units": "cfm", "Baseline - Total": 0, "Proposed - Total": 0},
@@ -276,65 +293,65 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
         {"Model Input Parameter": "Fan Power - Exhaust fan power", "Units": "kW", "Baseline - Total": "", "Proposed - Total": ""},
         {"Model Input Parameter": "Fan Power - System fan power", "Units": "kW", "Baseline - Total": 0, "Proposed - Total": 0},
         {"Model Input Parameter": "Fan Power - Allowed fan power", "Units": "kW", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "* Pressure Drop Adjustments (Systems 3 through 8) - Fully ducted return and/or exhaust air systems", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Return and/or exhaust airflow control devices", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Exhaust filters, scrubbers, or other exhaust treatment", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Particulate filtration credit: MERV 9 through 12", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Particulate filtration credit: MERV 13 through 15", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Particulate filtration credit: MERV 16 and greater and electronically enhanced filters", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Carbon and other gas-phase air cleaners", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Biosafety cabinet", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Energy recovery device, other than coil runaround loop", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Coil runaround loop", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Evaporative humidifier/cooler in series with another cooling coil", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Sound attenuation section", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Exhaust system serving fume hoods", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Laboratory and vivarium exhaust systems in high-rise buildings", "Units": "CFMD: cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   Adjustment", "Units": "in. w.c.", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Total Table 6.5.3.1.1B pressure drop adjustment (A)", "Units": "bhp", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "Fan power adjustments (Systems 9 through 10) - Non-mechanical cooling fan - additional fan power allowance", "Units": "cfm", "Baseline - Total": "", "Proposed - Total": ""},
+        {"Model Input Parameter": "   fan power per cfm", "Units": "kW", "Baseline - Total": "", "Proposed - Total": ""},
     ]
 
+    # Convert to DataFrame
     df = pd.DataFrame(data)
 
-    # --------------------------------
-    # Add dynamic Baseline/Proposed columns
-    # --------------------------------
+    # Dynamically add baseline/proposed columns
     num_cols = len(sv_a_df)
-    num_cols_p = len(sv_a_df_p)
+    num_cols_p = len(sv_a_df_proposed)
     for i in range(1, num_cols + 1):
-        df[f"Baseline - {i}"] = ""
+        df[f"Baseline - {i}"] = 0
     for i in range(1, num_cols_p + 1):
-        df[f"Proposed - {i}"] = ""
+        df[f"Proposed - {i}"] = 0
 
-    # SYSTEM TYPE row
-    system_types = sv_a_df["SYSTEM_TYPE"].astype(str).tolist() if "SYSTEM_TYPE" in sv_a_df.columns else [""] * num_cols
-    system_types_p = sv_a_df_p["SYSTEM_TYPE"].astype(str).tolist() if "SYSTEM_TYPE" in sv_a_df_p.columns else [""] * num_cols_p
-    system_row = {"Model Input Parameter": "SYSTEM TYPE", "Units": ""}
-
-    for i in range(1, num_cols + 1):
-        val = system_types[i - 1]
-        system_row[f"Baseline - {i}"] = val
-    for i in range(1, num_cols_p + 1):
-        valp = system_types_p[i - 1]
-        system_row[f"Proposed - {i}"] = valp
-
-    df = pd.concat([pd.DataFrame([system_row]), df], ignore_index=True)
-    
-    # -------------------------
-    # ROW INDEX after SYSTEM TYPE
-    # -------------------------
-    cooling_row = 1
-    cooling_map_row = 2
-    cooling_eff_row = 3
-    cooling_eir = 4
-    heating_row = 5
-    heating_map_row = 6
-    heating_eff_row = 7
-    fan_control_row = 8
-    supply_row = 9
-    outdoor_row = 10
-    fan_power_row = 16
-
-    # -------------------------
-    # COOLING VALUES
-    # -------------------------
+    # --- Baseline Fill Row 1 (Cooling capacity) ---
     cooling_values = sv_a_df["COOLING_CAPACITY(KBTU/HR)"].tolist()
-    cooling_values_p = sv_a_df_p["COOLING_CAPACITY(KBTU/HR)"].tolist()
     for i, val in enumerate(cooling_values, start=1):
-        df.at[cooling_row, f"Baseline - {i}"] = val
+        df.at[0, f"Baseline - {i}"] = val
 
+        # --- Row 2: Map capacity using SystemRanges ---
         sys_col = f"System{system}"
         mapped_value = ""
         for _, row in system_map.iterrows():
-            condition = str(row.get(sys_col, "")).strip()
-            if condition and condition not in ["N/A", "All capacities"]:
+            condition = str(row[sys_col]).strip()
+            if condition != "N/A" and condition != "All capacities":
+                # Convert ">=65000 and <135000" → check with eval
                 expr = condition.replace("and", "&")
                 try:
-                    if eval(str(val) + expr):
+                    if eval(str(val) + expr):  # e.g., 70000 >=65000 & 70000 <135000
                         mapped_value = condition
                         break
                 except:
@@ -342,19 +359,23 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
             elif condition == "All capacities":
                 mapped_value = condition
                 break
-        df.at[cooling_map_row, f"Baseline - {i}"] = mapped_value
+        df.at[1, f"Baseline - {i}"] = mapped_value
     
+    # --- Proposed Fill Row 1 (Cooling capacity) ---
+    cooling_values_p = sv_a_df_proposed["COOLING_CAPACITY(KBTU/HR)"].tolist()
     for i, val in enumerate(cooling_values_p, start=1):
-        df.at[cooling_row, f"Proposed - {i}"] = val
+        df.at[0, f"Proposed - {i}"] = val
 
+        # --- Row 2: Map capacity using SystemRanges ---
         sys_col = f"System{system}"
         mapped_value = ""
         for _, row in system_map.iterrows():
-            condition = str(row.get(sys_col, "")).strip()
-            if condition and condition not in ["N/A", "All capacities"]:
+            condition = str(row[sys_col]).strip()
+            if condition != "N/A" and condition != "All capacities":
+                # Convert ">=65000 and <135000" → check with eval
                 expr = condition.replace("and", "&")
                 try:
-                    if eval(str(val) + expr):
+                    if eval(str(val) + expr):  # e.g., 70000 >=65000 & 70000 <135000
                         mapped_value = condition
                         break
                 except:
@@ -362,300 +383,125 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
             elif condition == "All capacities":
                 mapped_value = condition
                 break
-        df.at[cooling_map_row, f"Proposed - {i}"] = "NA"
+        df.at[1, f"Proposed - {i}"] = mapped_value
 
-    # -------------------------
-    # UNITARY COOLING EFFICIENCY
-    # -------------------------
-    for i, cap in enumerate(cooling_values, start=1):
-        eff = ""
-        for _, r in df_units.iterrows():
-            rng = str(r.get("CoolingRange", "")).strip()
-            if rng and rng != "N/A":
-                expr = rng.replace("and", "&")
-                try:
-                    if eval(str(cap) + expr):
-                        eff = r.get("CoolingEfficiency", "")
-                        break
-                except:
-                    pass
-        df.at[cooling_eff_row, f"Baseline - {i}"] = eff
-    
-    for i, cap in enumerate(cooling_values_p, start=1):
-        eff = ""
-        for _, r in df_units.iterrows():
-            rng = str(r.get("CoolingRange", "")).strip()
-            if rng and rng != "N/A":
-                expr = rng.replace("and", "&")
-                try:
-                    if eval(str(cap) + expr):
-                        eff = r.get("CoolingEfficiency", "")
-                        break
-                except:
-                    pass
-        df.at[cooling_eff_row, f"Proposed - {i}"] = "NA"
-
-    # -------------------------
-    # HEATING VALUES
-    # -------------------------
+    # --- Fill Row 5 (Heating capacity) ---
     heating_values = sv_a_df["HEATING_CAPACITY(KBTU/HR)"].tolist()
-    heating_values_p = sv_a_df_p["HEATING_CAPACITY(KBTU/HR)"].tolist()
     for i, val in enumerate(heating_values, start=1):
-        df.at[heating_row, f"Baseline - {i}"] = val
+        df.at[4, f"Baseline - {i}"] = val
 
+        # --- Row 2: Map capacity using SystemRanges ---
         sys_col1 = f"System{system}"
-        mapped_value = ""
+        mapped_value1 = ""
         for _, row in system_map.iterrows():
-            condition = str(row.get(sys_col1, "")).strip()
-            if condition and condition not in ["N/A", "All capacities"]:
+            condition = str(row[sys_col1]).strip()
+            if condition != "N/A" and condition != "All capacities":
+                # Convert ">=65000 and <135000" → check with eval
                 expr = condition.replace("and", "&")
                 try:
-                    if eval(str(val) + expr):
-                        mapped_value = condition
+                    if eval(str(val) + expr):  # e.g., 70000 >=65000 & 70000 <135000
+                        mapped_value1 = condition
                         break
                 except:
                     pass
             elif condition == "All capacities":
-                mapped_value = condition
+                mapped_value1 = condition
                 break
-        df.at[heating_map_row, f"Baseline - {i}"] = mapped_value
+        df.at[5, f"Baseline - {i}"] = mapped_value1
+    
+    # --- Fill Row 5 (Heating capacity) ---
+    heating_values_p = sv_a_df_proposed["HEATING_CAPACITY(KBTU/HR)"].tolist()
     for i, val in enumerate(heating_values_p, start=1):
-        df.at[heating_row, f"Proposed - {i}"] = val
+        df.at[4, f"Proposed - {i}"] = val
+
+        # --- Row 2: Map capacity using SystemRanges ---
         sys_col1 = f"System{system}"
-        mapped_value = ""
+        mapped_value1 = ""
         for _, row in system_map.iterrows():
-            condition = str(row.get(sys_col1, "")).strip()
-            if condition and condition not in ["N/A", "All capacities"]:
+            condition = str(row[sys_col1]).strip()
+            if condition != "N/A" and condition != "All capacities":
+                # Convert ">=65000 and <135000" → check with eval
                 expr = condition.replace("and", "&")
                 try:
-                    if eval(str(val) + expr):
-                        mapped_value = condition
+                    if eval(str(val) + expr):  # e.g., 70000 >=65000 & 70000 <135000
+                        mapped_value1 = condition
                         break
                 except:
                     pass
             elif condition == "All capacities":
-                mapped_value = condition
+                mapped_value1 = condition
                 break
-        df.at[heating_map_row, f"Proposed - {i}"] = "NA"
+        df.at[5, f"Proposed - {i}"] = mapped_value1
 
-    # -------------------------
-    # UNITARY HEATING EFFICIENCY
-    # -------------------------
-    for i, cap in enumerate(heating_values, start=1):
-        eff = ""
-        for _, r in df_units.iterrows():
-            rng = str(r.get("HeatingRange", "")).strip()
-            if rng and rng != "N/A":
-                expr = rng.replace("and", "&")
-                try:
-                    if eval(str(cap) + expr):
-                        eff = r.get("HeatingEfficiency", "")
-                        break
-                except:
-                    pass
-        df.at[heating_eff_row, f"Baseline - {i}"] = eff
-        df.at[heating_eff_row, f"Proposed - {i}"] = eff
-
-    # -------------------------
-    # FAN CONTROL
-    # -------------------------
-    fanc = "Variable Speed" if 5 <= system <= 8 else "Constant Speed"
-    fanc_p = "Variable Speed" if 5 <= system <= 8 else "Constant Volume"
+    # --- Fill Row 7 (Fan control) ---
+    fanc = "Variable Speed" if system > 4 and system < 9 else "Constant Speed"
     for i in range(1, num_cols + 1):
-        df.at[fan_control_row, f"Baseline - {i}"] = fanc
+        df.at[7, f"Baseline - {i}"] = fanc
     for i in range(1, num_cols_p + 1):
-        df.at[fan_control_row, f"Proposed - {i}"] = fanc_p
+        df.at[7, f"Proposed - {i}"] = fanc
 
-    # -------------------------
-    # AIRFLOW VALUES
-    # -------------------------
-    supply_airflow = pd.to_numeric(sv_a_zone_df.get("SUPPLY-FLOW(CFM)", 0), errors="coerce").sum()
-    outside_airflow = pd.to_numeric(sv_a_zone_df.get("OUTISIDE-AIR-FLOW(CFM)", 0), errors="coerce").sum()
-    supply_fan = pd.to_numeric(sv_a_zone_df.get("FAN(KW)", 0), errors="coerce").sum()
+    # --- Airflows (safe calculation) ---
+    if "SUPPLY-FLOW(CFM)" in sv_a_zone_df.columns:
+        supply_airflow = pd.to_numeric(sv_a_zone_df["SUPPLY-FLOW(CFM)"], errors="coerce").sum()
+    else:
+        supply_airflow = 0
 
+    if "OUTISIDE-AIR-FLOW(CFM)" in sv_a_zone_df.columns:
+        sv_a_zone_df["OUTISIDE-AIR-FLOW(CFM)"] = pd.to_numeric(sv_a_zone_df["OUTISIDE-AIR-FLOW(CFM)"], errors="coerce")
+        outside_airflow = sv_a_zone_df["OUTISIDE-AIR-FLOW(CFM)"].sum()
+    else:
+        outside_airflow = 0
+    
+    if "FAN(KW)" in sv_a_zone_df.columns:
+        sv_a_zone_df["FAN(KW)"] = pd.to_numeric(sv_a_zone_df["FAN(KW)"], errors="coerce")
+        supply_fan = sv_a_zone_df["FAN(KW)"].sum()
+    else:
+        supply_fan = 0
+
+    # --- Fill Row 8, 9 (Airflows) ---
     for i in range(1, num_cols + 1):
-        df.at[supply_row, f"Baseline - {i}"] = supply_airflow
-        df.at[outdoor_row, f"Baseline - {i}"] = outside_airflow
-        df.at[fan_power_row, f"Baseline - {i}"] = round(supply_fan,2)
+        df.at[8, f"Baseline - {i}"] = supply_airflow
+        df.at[9, f"Baseline - {i}"] = outside_airflow
+        df.at[15, f"Baseline - {i}"] = supply_fan
+    
     for i in range(1, num_cols_p + 1):
-        df.at[supply_row, f"Proposed - {i}"] = supply_airflow
-        df.at[outdoor_row, f"Proposed - {i}"] = outside_airflow
-        df.at[fan_power_row, f"Proposed - {i}"] = round(supply_fan,2)
+        df.at[8, f"Proposed - {i}"] = supply_airflow
+        df.at[9, f"Proposed - {i}"] = outside_airflow
+        df.at[15, f"Proposed - {i}"] = supply_fan
 
-    # -------------------------
-    # CALCULATE TOTALS
-    # -------------------------
-    baseline_cols = [c for c in df.columns if c.startswith("Baseline - ") and c != "Baseline - Total"]
-    proposed_cols = [c for c in df.columns if c.startswith("Proposed - ") and c != "Proposed - Total"]
+    # Column config
+    column_config = {
+        "Units": st.column_config.SelectboxColumn("Units", options=["kBtuh", "Btuh", "tons", "EER", "kW", "SEER", "IEER", "IPLV", "kBtu/h", "HSPF", "COP", "AFUE", "%Et", "%Ec", "°F", "°C"])
+    }
+    for i in range(1, num_cols + 1):
+        column_config[f"Baseline - {i}"] = st.column_config.TextColumn(f"Baseline - {i}")
+        column_config[f"Proposed - {i}"] = st.column_config.NumberColumn(f"Proposed - {i}", step=1, default=0)
+    
+    # --- Update Total columns ---
+    baseline_cols = [col for col in df.columns if col.startswith("Baseline - ") and col != "Baseline - Total"]
+    proposed_cols = [col for col in df.columns if col.startswith("Proposed - ") and col != "Proposed - Total"]
 
     for idx in range(len(df)):
-        bvals = pd.to_numeric(df.loc[idx, baseline_cols], errors="coerce")
-        pvals = pd.to_numeric(df.loc[idx, proposed_cols], errors="coerce")
-        if bvals.notna().any():
-            df.at[idx, "Baseline - Total"] = bvals.sum()
-        if pvals.notna().any():
-            df.at[idx, "Proposed - Total"] = pvals.sum()
+        # Only sum numeric columns, ignore text
+        baseline_vals = pd.to_numeric(df.loc[idx, baseline_cols], errors="coerce")
+        proposed_vals = pd.to_numeric(df.loc[idx, proposed_cols], errors="coerce")
 
-    # ----------------------------------------------------
-    # REORDER COLUMNS:
-    # Baseline-Total → Proposed-Total → Baseline-i → Proposed-i
-    # ----------------------------------------------------
-    base_total = ["Baseline - Total"]
-    prop_total = ["Proposed - Total"]
+        if baseline_vals.notna().any():
+            df.at[idx, "Baseline - Total"] = baseline_vals.sum()
+        if proposed_vals.notna().any():
+            df.at[idx, "Proposed - Total"] = proposed_vals.sum()
 
-    baseline_i = sorted([c for c in df.columns if c.startswith("Baseline - ") and c not in base_total],
-                        key=lambda x: int(x.split(" - ")[1]))
-
-    proposed_i = sorted([c for c in df.columns if c.startswith("Proposed - ") and c not in prop_total],
-                        key=lambda x: int(x.split(" - ")[1]))
-
-    # First include non-baseline/proposed columns
-    other_cols = [c for c in df.columns if not c.startswith("Baseline - ") and not c.startswith("Proposed - ")]
-
-    # Final order:
-    # Model Input Parameter | Units | Baseline-Total | Proposed-Total | Baseline-i... | Proposed-i...
-    new_order = other_cols + base_total + prop_total + baseline_i + proposed_i
-
-    df = df[new_order]
-    # ---------------------------------------
-    # INSERT BLANK ROW AS 2nd ROW
-    # ---------------------------------------
-    blank_row = {col: "" for col in df.columns}
-    df = pd.concat([df.iloc[:1], pd.DataFrame([blank_row]), df.iloc[1:]], ignore_index=True)
-
-    # st.write(sv_a_df)
-    # st.write(sv_a_df_p)
-    # st.write(sv_a_zone_df)
-
-    # ---------------------------------------
-    # FILL 2nd ROW → Equivalent ASHRAE SYSTEM
-    # ---------------------------------------
-
-    # Mapping rules
-    ashrae_map = {
-        "PTAC": lambda h, c: "Sys1" if h == 0 else "Sys2",
-        "PSZ":  lambda h, c: "Sys3" if h == 0 else "Sys4",
-        "PVAVS": lambda h, c: "Sys5",
-        "PIU": lambda h, c: "Sys6" if c > 0 else "Sys8",
-        "VAVS": lambda h, c: "Sys7" if c == 0 else "Sys7",
-    }
-
-    df.at[1, "Model Input Parameter"] = "Equivalent ASHRAE System"
-    df.at[1, "Units"] = ""
-
-    # Fill values for each Baseline-i / Proposed-i
-    for i in range(1, num_cols + 1):
-
-        sys_type = sv_a_df.loc[i-1, "SYSTEM_TYPE"]
-        h_eir = float(sv_a_df.loc[i-1, "HEATING_EIR(BTU/BTU)"])
-        c_eir = float(sv_a_df.loc[i-1, "COOLING_EIR(BTU/BTU)"])
-        if sys_type in ashrae_map:
-            val = ashrae_map[sys_type](h_eir, c_eir)
-        else:
-            val = ""
-
-        df.at[1, f"Baseline - {i}"] = val
-        if c_eir == 0 or pd.isna(c_eir):
-            df.at[4, f"Baseline - {i}"] = ""
-        else:
-            df.at[4, f"Baseline - {i}"] = round(3.412142/c_eir,2)
-        
-        if h_eir == 0 or pd.isna(h_eir):
-            df.at[8, f"Baseline - {i}"] = ""
-        else:
-            df.at[8, f"Baseline - {i}"] = round(3.412142/h_eir,2)
-        df.at[5, f"Baseline - {i}"] = "NA"
-        df.at[12, f"Baseline - {i}"] = "No"
-        df.at[13, f"Baseline - {i}"] = "Not Required"
-        df.at[14, f"Baseline - {i}"] = "Not Required"
-        df.at[15, f"Baseline - {i}"] = "No"
-        df.at[16, f"Baseline - {i}"] = "NA"
-    
-    for i in range(1, num_cols_p + 1):
-        sys_type_p = sv_a_df_p.loc[i-1, "SYSTEM_TYPE"]
-        h_eir_p = float(sv_a_df_p.loc[i-1, "HEATING_EIR(BTU/BTU)"])
-        c_eir_p = float(sv_a_df_p.loc[i-1, "COOLING_EIR(BTU/BTU)"])
-        if sys_type_p in ashrae_map:
-            val_p = ashrae_map[sys_type_p](h_eir_p, c_eir_p)
-        else:
-            val_p = ""
-        df.at[1, f"Proposed - {i}"] = val_p
-        if c_eir_p == 0 or pd.isna(c_eir_p):
-            df.at[4, f"Proposed - {i}"] = ""
-        else:
-            df.at[4, f"Proposed - {i}"] = round(3.412142 / c_eir_p, 2)
-        if h_eir_p == 0 or pd.isna(h_eir_p):
-            df.at[8, f"Proposed - {i}"] = ""
-        else:
-            df.at[8, f"Proposed - {i}"] = round(3.412142/h_eir_p,2)
-        df.at[5, f"Proposed - {i}"] = "NA"
-        df.at[12, f"Proposed - {i}"] = "No"
-        df.at[13, f"Proposed - {i}"] = "Not Required"
-        df.at[14, f"Proposed - {i}"] = "Not Required"
-        df.at[15, f"Proposed - {i}"] = "No"
-        df.at[16, f"Proposed - {i}"] = "NA"
-    df = df[:-4]
-    # # Loop through Baseline columns
-    # for i in range(1, num_cols + 1):
-    #     sys_val = df.at[2, f"Baseline - {i}"]   # <-- row 2, change index if needed
-
-    #     if isinstance(sys_val, str) and sys_val.startswith("Sys"):
-    #         system_no = int(sys_val.replace("Sys", ""))   # extract number
-    #         fanc = "Variable Speed" if 5 <= system_no <= 8 else "Constant Speed"
-    #     else:
-    #         fanc = ""
-
-    #     df.at[fan_control_row, f"Baseline - {i}"] = fanc
-
-    # # Loop through Proposed columns
-    # for i in range(1, num_cols_p + 1):
-    #     sys_val = df.at[2, f"Proposed - {i}"]
-
-    #     if isinstance(sys_val, str) and sys_val.startswith("Sys"):
-    #         system_no = int(sys_val.replace("Sys", "")) 
-    #         fanc = "Variable Speed" if 5 <= system_no <= 8 else "Constant Speed"
-    #     else:
-    #         fanc = ""
-
-    #     df.at[fan_control_row, f"Proposed - {i}"] = fanc
-
-    # -------------------------
-    # DISPLAY
-    # -------------------------
-
-    # Identify columns where first row == "SUM"
-    sum_columns = [col for col in df.columns if str(df.iloc[0][col]).strip().upper() == "SUM"]
-
-    # Checkbox to include/exclude SUM columns
-    show_sum = st.checkbox("Show SUM system type columns?", value=False)
-
-    # Filter dataframe
-    if show_sum:
-        df_filtered = df.copy()
-    else:
-        df_filtered = df.drop(columns=sum_columns)
-
-    # Data editor
+    # Editable table in Streamlit
     edited_df = st.data_editor(
-        df_filtered,
+        df,
+        column_config=column_config,
         hide_index=True,
-        use_container_width=True,
-        key="editor_no_sum"  # Unique key prevents duplicate ID issue
-    )
-
-    # edited_df = st.data_editor(
-    #     df,
-    #     hide_index=True,
-    #     use_container_width=True
-    # )
-
-
-
+        use_container_width=True
+    ) 
+    
 
     # st.write(sv_a_df)
     # st.write(sv_a_zone_df)
-
-
 
     # rows = df.iloc[:, 0].dropna().astype(str).tolist()
     # options = df.iloc[:, 1].dropna().unique().tolist()
@@ -748,3 +594,4 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     #     st.write(sv_a_df)
     #     total_outside_air = pd.to_numeric(sv_a_zone_df['OUTISIDE-AIR-FLOW(CFM)'], errors='coerce').sum()
     #     st.write(f"{total_outside_air:.2f}")
+
