@@ -136,8 +136,8 @@ def main():
     """, unsafe_allow_html=True)
     
     # Create two rows of columns with equal widths
-    col2, col3, col4, col5, col6, col7, col8 = st.columns(7) 
-    col9, col10, col11, col13, col14, col15, col16 = st.columns(7)
+    col2, col3, col4, col5, col6, col7 = st.columns(6) 
+    col8, col9, col10, col11, col12, col13 = st.columns(6)
     
     # First row of buttons
     with col2:
@@ -158,11 +158,14 @@ def main():
     with col7:
         if st.button("SIM to PDF", key="button_sim_to_pdf"):
             st.session_state.script_choice = "SIM to PDF"
+    # with col8:
+    #     if st.button("Baseline Automation", key="button_baseline_automation"):
+    #         st.session_state.script_choice = "baselineAutomation"
+    
+    # Second row of buttons
     with col8:
         if st.button("Baseline Automation", key="button_baseline_automation"):
             st.session_state.script_choice = "baselineAutomation"
-    
-    # Second row of buttons
     with col9:
         if st.button("Schedule Generator", key="button_schedule_generator"): 
             st.session_state.script_choice = "sh"
@@ -170,22 +173,22 @@ def main():
         if st.button("QA / QC", key="button_qa_qc"):
             st.session_state.script_choice = "q"
     with col11:
-        if st.button("Polygon Parser", key="button_analytics"): #Queries
-            st.session_state.script_choice = "sh1"
-    # with col12:
-    #     if st.button("EXE and Resources", key="button_exe_resources"):
-    #         st.session_state.script_choice = "exe"
-    with col13:
-        if st.button("IGBC Green 🏡", key="references"): #Queries
-            st.session_state.script_choice = "reference"
-    with col14:
-        if st.button("Calibration Tool", key="button_contact"): #Queries
-            st.session_state.script_choice = "cal"
-    with col15:
         if st.button("MEPC Tool", key="mep_calculator"): #Queries
             st.switch_page("pages/mepc.py")
             # st.session_state.script_choice = "mepc"
-    with col16:
+    # with col11:
+    #     if st.button("Polygon Parser", key="button_analytics"): #Queries
+    #         st.session_state.script_choice = "sh1"
+    # with col12:
+    #     if st.button("EXE and Resources", key="button_exe_resources"):
+    #         st.session_state.script_choice = "exe"
+    with col12:
+        if st.button("IGBC Green 🏡", key="references"): #Queries
+            st.session_state.script_choice = "reference"
+    # with col14:
+    #     if st.button("Calibration Tool", key="button_contact"): #Queries
+    #         st.session_state.script_choice = "cal"
+    with col13:
         if st.button("HAP Parser", key="HAP_calculator"): #Queries
             st.session_state.script_choice = "hap"
     

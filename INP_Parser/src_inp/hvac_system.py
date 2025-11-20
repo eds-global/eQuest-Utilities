@@ -35,7 +35,7 @@ def process_list(input_list):
 def get_HVAC_System_report(name):
     with open(name) as f:
         flist = f.readlines()
-        print(name)
+        # print(name)
         # Extract lines between 'Systems / Zones' and 'Metering & Misc HVAC'
         sys_count = [num for num, line in enumerate(flist) if 'Systems / Zones' in line]
         

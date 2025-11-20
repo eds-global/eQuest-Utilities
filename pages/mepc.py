@@ -241,7 +241,7 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     st.markdown('<div id="hvac" class="section"></div>', unsafe_allow_html=True)
     st.markdown("""<br><br><br>""", unsafe_allow_html=True)
     st.markdown(
-        '<h5 style="color:red;">✪ Air-Side HVAC System Schedule</h5>',
+        '<h5 style="color:red;">Air-Side HVAC</h5>',
         unsafe_allow_html=True
     )
 
@@ -626,14 +626,11 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     # Identify columns where first row == "SUM"
     sum_columns = [col for col in df.columns if str(df.iloc[0][col]).strip().upper() == "SUM"]
 
-    # Checkbox to include/exclude SUM columns
-    show_sum = st.checkbox("Show SUM system type columns?", value=False)
-
-    # Filter dataframe
-    if show_sum:
-        df_filtered = df.copy()
-    else:
-        df_filtered = df.drop(columns=sum_columns)
+    # # Filter dataframe
+    # if show_sum:
+    #     df_filtered = df.copy()
+    # else:
+    df_filtered = df.drop(columns=sum_columns)
 
     # Data editor
     edited_df = st.data_editor(
@@ -643,11 +640,9 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
         key="editor_no_sum"  # Unique key prevents duplicate ID issue
     )
 
-    # edited_df = st.data_editor(
-    #     df,
-    #     hide_index=True,
-    #     use_container_width=True
-    # )
+    # -------------------------
+    # Section 8 - Water-Side HVAC
+    # -------------------------
 
 
 
