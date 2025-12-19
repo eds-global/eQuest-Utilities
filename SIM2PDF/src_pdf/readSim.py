@@ -100,7 +100,11 @@ def get_report_as_pdf(report_content, folder_name, path):
 # -------------------------------
 # Function to get pdf in same directory where generated sim is located.
 def generate_pdf(output_directory):
-    simfiles = gb.glob(os.path.join(output_directory, '*.sim'))
+    simfiles = [
+        f for f in gb.glob(os.path.join(output_directory, '*'))
+        if f.lower().endswith('.sim')
+    ]
+    # simfiles = gb.glob(os.path.join(output_directory, '*.sim'))
     if simfiles:  # Check if simfiles list is not empty
         for sim_file in simfiles:
             folder_name = os.path.splitext(os.path.basename(sim_file))[0]
