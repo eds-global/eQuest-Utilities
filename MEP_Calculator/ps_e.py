@@ -102,6 +102,7 @@ def get_BEPU_report(name):
 
 def get_PSE_report(name):
     try:
+        st.write(name)
         with open(name) as f:
             flist = f.readlines()
     
