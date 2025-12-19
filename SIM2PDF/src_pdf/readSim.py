@@ -132,10 +132,8 @@ def extractReport(input_sim_files, reports):
 
     # Process each SIM file
     for name in simfiles:
-        with open(name "r", encoding="latin-1", errors="ignore") as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             f_list = f.readlines()
-        # with open(name) as f:
-        #     f_list = f.readlines()
             for num, line in enumerate(f_list):
                 for r in reports:
                     if r in line:
