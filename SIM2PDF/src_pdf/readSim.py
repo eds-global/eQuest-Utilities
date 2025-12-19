@@ -104,7 +104,7 @@ def generate_pdf(output_directory):
         f for f in gb.glob(os.path.join(output_directory, '*'))
         if f.lower().endswith('.sim')
     ]
-    simfiles = gb.glob(os.path.join(output_directory, '*.sim'))
+    # simfiles = gb.glob(os.path.join(output_directory, '*.sim'))
     if simfiles:  # Check if simfiles list is not empty
         for sim_file in simfiles:
             folder_name = os.path.splitext(os.path.basename(sim_file))[0]
