@@ -185,7 +185,7 @@ def extractReport(input_sim_files, reports):
     # -----------------------------------
     with open(zip_path, "rb") as f:
         st.download_button(
-            label="📥 Download ALL PDF Reports (ZIP)",
+            label="📥 Download Reports (ZIP)",
             data=f,
             file_name="All_Reports.zip",
             mime="application/zip"
