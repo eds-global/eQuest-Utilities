@@ -523,9 +523,9 @@ def main():
         # Check if files and reports are selected
         if uploaded_files and reports_input:
             if st.button("Convert to PDF"):
-                # Clean up each report name
-                sim_print.main(reports_input, uploaded_files)
-                # st.success("Multi-file processing is coming soon. For now, use the EXE for batches.")
+                with st.spinner("Processing..."):
+                    sim_print.main(reports_input, uploaded_files)
+    
        
     elif st.session_state.script_choice == "cal":
         st.markdown("""
