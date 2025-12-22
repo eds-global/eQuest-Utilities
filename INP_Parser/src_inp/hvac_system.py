@@ -33,7 +33,7 @@ def process_list(input_list):
     return results
 
 def get_HVAC_System_report(name):
-    with open(name) as f:
+    with open(name, "r", encoding="cp1252", errors="ignore") as f:
         flist = f.readlines()
         # print(name)
         # Extract lines between 'Systems / Zones' and 'Metering & Misc HVAC'
@@ -124,7 +124,7 @@ def process_list_zone(input_list):
 
 def get_HVAC_Zone_report(name):
     # Open the .inp file for reading
-    with open(name) as f:
+    with open(name, "r", encoding="cp1252", errors="ignore") as f:
         # Read each line of the file
         flist = f.readlines()
 

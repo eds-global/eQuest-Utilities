@@ -29,7 +29,7 @@ def get_UnconditionedAboveArea(sva_df):
 
 def get_SVA_report(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
     
             sva_count = [] 

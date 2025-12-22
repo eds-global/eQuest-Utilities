@@ -10,7 +10,7 @@ warnings.filterwarnings("ignore")
 # of walls and windows.
 def get_LVD_Summary_report(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
     
             lvd_count = [] 

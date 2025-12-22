@@ -22,7 +22,7 @@ def get_report_and_save(report_function, inp_path, file_suffix):
         return None
 
 def extract_polygons(inp_file):
-    with open(inp_file) as f:
+    with open(inp_file, "r", encoding="cp1252", errors="ignore") as f:
         flist = f.readlines()
         polygon_count = [] 
         # Iterate through each line in flist along with its line number

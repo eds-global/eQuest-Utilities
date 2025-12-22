@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 
 def get_PSF_report_Prop(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
     
             pse_count = [] 
@@ -124,7 +124,7 @@ def get_PSF_report_Prop(name):
 
 def get_PSF_report_Base(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
     
             pse_count = [] 
@@ -241,7 +241,7 @@ def get_PSF_report_Base(name):
 
 def get_PSF_report_Prop_all(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
 
             pse_count = [] 
@@ -396,7 +396,7 @@ def get_PSF_report_Prop_all(name):
 
 def get_PSF_report_Base_all(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
 
             pse_count = [] 

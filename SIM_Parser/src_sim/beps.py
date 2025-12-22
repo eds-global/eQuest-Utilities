@@ -10,7 +10,7 @@ warnings.filterwarnings("ignore")
 # First the report is in string format, it is converted into the lists and then dataframe to print csvs
 def get_BEPS_report(name):
     # Open the file named 'name' and read its contents
-    with open(name) as f:
+    with open(name, "r", encoding="cp1252", errors="ignore") as f:
          # Read all lines from the file and store them in a list named flist
         flist = f.readlines()
 

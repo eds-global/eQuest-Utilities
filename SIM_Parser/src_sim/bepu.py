@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 def get_BEPU_report(name):
     # Open the file named 'name' and read its contents
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             # Read all lines from the file and store them in a list named flist
             flist = f.readlines()
     

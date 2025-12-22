@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 
 def get_PSE_report(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
     
             pse_count = [] 
