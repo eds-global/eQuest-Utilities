@@ -552,10 +552,10 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
     if st.button("View Report"):
         prop_data = psf.get_PSF_report_Base_all(sim_p_path)
         base_data = psf.get_PSF_report_Base_all(sim_b_path)
-        st.write("Proposed Data")
-        st.write(prop_data)
-        st.write("Baseline Data")
-        st.write(base_data)
+        # st.write("Proposed Data")
+        # st.write(prop_data)
+        # st.write("Baseline Data")
+        # st.write(base_data)
 
         # Add new column at start of dataframe named Filename in prop_data and base_data
         prop_data['Filename'] = "Proposed"
@@ -755,8 +755,8 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
             ]
 
             for col in columns:
-                st.write(col)
-                st.write(data_kwh_sum)
+                # st.write(col)
+                # st.write(data_kwh_sum)
                 # st.write(data_kwh_sum.shape)
                 value4 = data_kwh_sum.loc[4, col]
                 value3 = data_kwh_sum.loc[3, col]
