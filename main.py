@@ -494,9 +494,9 @@ def main():
         """, unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
-            uploaded_p_file = st.file_uploader("Upload a Proposed SIM file", type="sim", accept_multiple_files=False)
+            uploaded_p_file = st.file_uploader("Upload a Proposed SIM file", type=["sim", "SIM"], accept_multiple_files=False)
         with col2:
-            uploaded_b_file = st.file_uploader("Upload a Baseline SIM file", type="sim", accept_multiple_files=False)
+            uploaded_b_file = st.file_uploader("Upload a Baseline SIM file", type=["sim", "SIM"], accept_multiple_files=False)
         if uploaded_p_file is not None and uploaded_b_file is not None:
             # if st.button("Table based on Metering"):
             qa.getTwoSimFiles(uploaded_p_file, uploaded_b_file)
