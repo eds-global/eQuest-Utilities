@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 
 def get_lvd_Psummary(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
     
             lvd_count = [] 
@@ -54,7 +54,7 @@ def get_lvd_Psummary(name):
 
 def get_lvd_Bsummary(name):
     try:
-        with open(name) as f:
+        with open(name, "r", encoding="cp1252", errors="ignore") as f:
             flist = f.readlines()
     
             lvd_count = [] 
