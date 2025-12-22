@@ -119,8 +119,8 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
 
     lvd_summary_p = get_lvd_Psummary(sim_p_path)
     lvd_summary_b = get_lvd_Bsummary(sim_b_path)
-    # st.write(lvd_summary_p)
-    # st.write(lvd_summary_b)
+    st.write(lvd_summary_p)
+    st.write(lvd_summary_b)
 
     # if st.button("Based on Metering"):
     #     prop_data = psf.get_PSF_report_Prop(sim_p_path)
