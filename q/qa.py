@@ -755,8 +755,6 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
             ]
 
             for col in columns:
-                # st.write(col)
-                # st.write(data_kwh_sum)
                 # st.write(data_kwh_sum.shape)
                 value4 = data_kwh_sum.loc[4, col]
                 value3 = data_kwh_sum.loc[3, col]
@@ -1130,23 +1128,62 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
         if not data_kwh_sum.empty:
             st.markdown(f"""<h7 style="color:blue;">🔵 kWH </h7>""", unsafe_allow_html=True)
             # Select the rows to be used for the pie charts
+            from plotly.subplots import make_subplots
+            import plotly.graph_objects as go
+
             row3 = data_kwh_sum.iloc[0, :-1]
             row_last = data_kwh_sum.iloc[1, :-1]
-            # Ensure the rows are numeric
+
+            # Ensure numeric
             if pd.to_numeric(row3, errors='coerce').sum() == 0 and pd.to_numeric(row_last, errors='coerce').sum() == 0:
-                st.markdown("""<p><strong>Note:</strong> All values are zero. No meaningful visualization can be displayed.</p>""", unsafe_allow_html=True)
+                st.markdown(
+                    """<p><strong>Note:</strong> All values are zero. No meaningful visualization can be displayed.</p>""",
+                    unsafe_allow_html=True
+                )
             else:
-                fig1 = px.pie(values=row3.values, names=row3.index, title='Baseline')
-                fig2 = px.pie(values=row_last.values, names=row_last.index, title='Proposed')
-        
-                fig1.update_traces(textinfo='percent+label')
-                fig2.update_traces(textinfo='percent+label')
-        
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.plotly_chart(fig1)
-                with col2:
-                    st.plotly_chart(fig2)
+                fig = make_subplots(
+                    rows=1,
+                    cols=2,
+                    specs=[[{'type': 'domain'}, {'type': 'domain'}]],
+                    subplot_titles=['Baseline', 'Proposed']
+                )
+
+                # Baseline Pie
+                fig.add_trace(
+                    go.Pie(
+                        labels=row3.index,
+                        values=row3.values,
+                        textinfo='percent+label',
+                        textposition='inside',   # 🔥 force inside
+                        showlegend=True   # legend only here
+                    ),
+                    row=1, col=1
+                )
+
+                # Proposed Pie
+                fig.add_trace(
+                    go.Pie(
+                        labels=row_last.index,
+                        values=row_last.values,
+                        textinfo='percent+label',
+                        textposition='inside',   # 🔥 force inside
+                        showlegend=False  # hide duplicate legend
+                    ),
+                    row=1, col=2
+                )
+
+                fig.update_layout(
+                    legend_title_text='',
+                    legend=dict(
+                        orientation='h',     # horizontal
+                        x=0.5,
+                        y=-0.15,
+                        xanchor='center',
+                        yanchor='top'
+                    )
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
         else:
             st.markdown("""<p><strong>Note:</strong> No data found for kWH & MAX kW.</p>""", unsafe_allow_html=True)
 
