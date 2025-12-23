@@ -656,7 +656,7 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
             data['HEAT REJECT'].str.contains('KWH|MAX KW', regex=True)
         ]
         data_kwh = data_kwh.reset_index(drop=True)
-        
+        # st.write(data_kwh)
         # from data dataframe select only rows with 'THERM' or 'MAX THERM/HR' in UNIT column
         data_therm = data[
             data['UNIT'].str.contains('THERM|MAX THERM/HR', regex=True) | 
@@ -697,8 +697,30 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
         data_kwh['EXT USAGE'] = pd.to_numeric(data_kwh['EXT USAGE'].str.replace(',',''), errors='coerce')
         data_kwh['TOTAL'] = pd.to_numeric(data_kwh['TOTAL'].str.replace(',',''), errors='coerce')
         # form new dataframe with sum KWH in 1 row and sum MAX KW in 1 row means based on same UNIT column values add into 1 row
-        data_kwh_sum = data_kwh.groupby(['UNIT', 'Filename']).sum().reset_index()
-
+        data_kwh_sum = (
+            data_kwh
+            .groupby(['UNIT', 'Filename'], as_index=False)
+            .agg({
+                'LIGHTS': 'sum',
+                'TASK LIGHTS': 'sum',
+                'MISC EQUIP': 'sum',
+                'SPACE EQUIP': 'sum',
+                'SPACE COOLING': 'sum',
+                'HEAT REJECT': 'sum',
+                'PUMPS & AUX': 'sum',
+                'VENT FANS': 'sum',
+                'REFRIG DISPLAY': 'sum',
+                'HT PUMP SUPPLEM': 'sum',
+                'DOMEST HOT WTR': 'sum',
+                'EXT USAGE': 'sum',
+                'TOTAL': 'sum',
+                'Meterings': lambda x: ', '.join(sorted(set(','.join(x.dropna()).split(','))))
+            })
+        )
+        data_kwh_sum = data_kwh_sum.round(1)
+        col = data_kwh_sum.pop('Meterings')
+        data_kwh_sum.insert(2, 'Meterings', col)
+        # st.write(data_kwh_sum)
         if not data_kwh_sum.empty:
             new_row_3rd = {
                 'UNIT': ['Energy Savings'],
@@ -830,7 +852,7 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                 new_row_last_df = pd.DataFrame(new_row_last)
                 new_row_last_df1 = pd.DataFrame(new_row_last1)
                 data_kwh_sum = pd.concat([data_kwh_sum, new_row_last_df, new_row_last_df1]).reset_index(drop=True)
-
+        
         # st.markdown(f"""<h6 style="color:green;">🟡 THERM & MAX THERM/HR</h6>""", unsafe_allow_html=True)
         # converting to numeric type and removing comma from data
         data_therm['LIGHTS'] = pd.to_numeric(data_therm['LIGHTS'].str.replace(',',''), errors='coerce')
@@ -1373,11 +1395,12 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
 
         ################################################## MASTER TABLE ##############################################
         with st.expander("📋 **Explore Tables** "):
-            st.markdown(f"""<h6 style="color:red;">🔴 MASTER TABLE HAVING SAVINGS(in %), EFLH, % CONTRIBUTION BASED ON UNITS </h6>""", unsafe_allow_html=True)
-            st.markdown(f"""<h7 style="color:blue;">🔵 kWH & MAX kW</h7>""", unsafe_allow_html=True)
+            # st.markdown(f"""<h6 style="color:red;">🔴 MASTER TABLE HAVING SAVINGS(in %), EFLH, % CONTRIBUTION BASED ON UNITS </h6>""", unsafe_allow_html=True)
+            # st.markdown(f"""<h7 style="color:blue;">🔵 kWH & MAX kW</h7>""", unsafe_allow_html=True)
             # if empty dataframe then write message in markdown - No KWH & MAX KW data found in the selected data
             if data_kwh_sum.empty:
-                st.markdown("""<p><strong>Note:</strong> No data found for kWH & MAX kW.</p>""", unsafe_allow_html=True)
+                print("kWh")
+                # st.markdown("""<p><strong>Note:</strong>kWH & MAX kW.</p>""", unsafe_allow_html=True)
             else:
                 data_kwh_sum1 = data_kwh.groupby(['Filename', 'UNIT']).sum().reset_index().sort_values(by=['Filename', 'UNIT'], ascending=False)
                 # Extract the last column values
@@ -1567,10 +1590,11 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                 data_kwh_sum1 = pd.concat([data_kwh_sum1, new_row_df], ignore_index=True)
                 # st.write(data_kwh_sum1)
     
-            st.markdown(f"""<h7 style="color:red;">🔴 THERM & MAX THERM/HR</h7>""", unsafe_allow_html=True)
+            # st.markdown(f"""<h7 style="color:red;">🔴 THERM & MAX THERM/HR</h7>""", unsafe_allow_html=True)
             # if empty dataframe then write message in markdown - No THERM & MAX THERM/HR data found in the selected data
             if data_therm_sum.empty:
-                st.markdown("""<p><strong>Note:</strong> No data found for THERM & MAX THERM/HR.</p>""", unsafe_allow_html=True)
+                print("therm")
+                # st.markdown("""<p><strong>Note:</strong>THERM & MAX THERM/HR.</p>""", unsafe_allow_html=True)
             else:
                 data_therm_sum1 = data_therm.groupby(['Filename', 'UNIT']).sum().reset_index().sort_values(by=['Filename', 'UNIT'], ascending=False)
                 # Extract the last column values
@@ -1758,10 +1782,11 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                 data_therm_sum1 = pd.concat([data_therm_sum1, new_row_df], ignore_index=True)
                 # st.write(data_therm_sum1)
             
-            st.markdown(f"""<h7 style="color:orange;">🟠 MBTU & MAX MBTU/HR</h7>""", unsafe_allow_html=True)
+            # st.markdown(f"""<h7 style="color:orange;">🟠 MBTU & MAX MBTU/HR</h7>""", unsafe_allow_html=True)
              # if empty dataframe then write message in markdown - No MBTU & MAX MBTU data found in the selected data
             if data_mbtu_sum.empty:
-                st.markdown("""<p><strong>Note:</strong> No data found for MBTU & MAX MBTU/HR.</p>""", unsafe_allow_html=True)
+                print("mbtu")
+                # st.markdown("""<p><strong>Note:</strong> MBTU & MAX MBTU/HR.</p>""", unsafe_allow_html=True)
             else:
                 data_mbtu_sum1 = data_mbtu.groupby(['Filename', 'UNIT']).sum().reset_index().sort_values(by=['Filename', 'UNIT'], ascending=False)
                 # Extract the last column values
