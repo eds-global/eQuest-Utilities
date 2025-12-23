@@ -1126,7 +1126,7 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
         
         st.markdown(f"""<h6 style="color:red;">🔴 ENERGY DISTRIBUTION PIE CHART BASED ON UNITS</h6>""", unsafe_allow_html=True)
         if not data_kwh_sum.empty:
-            st.markdown(f"""<h7 style="color:blue;">🔵 kWH </h7>""", unsafe_allow_html=True)
+            st.markdown(f"""<h7 style="color:blue;">🔵 kWh </h7>""", unsafe_allow_html=True)
             # Select the rows to be used for the pie charts
             from plotly.subplots import make_subplots
             import plotly.graph_objects as go
@@ -1173,6 +1173,7 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
                 )
 
                 fig.update_layout(
+                    height=550,
                     legend_title_text='',
                     legend=dict(
                         orientation='h',     # horizontal
@@ -1238,7 +1239,12 @@ def getTwoSimFiles(input_simp_path, input_simb_path):
         ###############################################################################################################
         st.markdown(f"""<h6 style="color:red;">🔴 ENERGY DISTRIBUTION BAR CHART BASED ON UNITS</h6>""", unsafe_allow_html=True)
         if not data_kwh_sum.empty:
-            st.markdown(f"""<h7 style="color:blue;">🔵 kWH </h7>""", unsafe_allow_html=True)
+            st.markdown(f"""<h7 style="color:blue;">🔵 kWh </h7>""", unsafe_allow_html=True)
+            for col in data_kwh_sum.columns:
+                for i in range(0, len(data_kwh_sum), 3):
+                    if i + 2 < len(data_kwh_sum):
+                        if data_kwh_sum.loc[i, col] == 0 and data_kwh_sum.loc[i + 1, col] == 0:
+                            data_kwh_sum.loc[i + 2, col] = ""   # blank
             # Select the rows to be used for the bar charts
             row0 = data_kwh_sum.iloc[0, 3:-1]  # 3rd row (index 2)
             row1 = data_kwh_sum.iloc[1, 3:-1]  # Last row
