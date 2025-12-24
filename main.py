@@ -549,9 +549,9 @@ def main():
             with col1:
                 uploaded_pdf = st.file_uploader("Upload PDF file", type="pdf", accept_multiple_files=False)
             with col2:
-                start_page = st.number_input("Start Page", min_value=0, max_value=600, value=0, key="start")
+                start_page = st.number_input("Start Page", min_value=0, max_value=10000, value=0, key="start")
             with col3:
-                end_page = st.number_input("End Page", min_value=0, max_value=600, value=0, key="end")
+                end_page = st.number_input("End Page", min_value=0, max_value=10000, value=0, key="end")
         elif file_type == "RTF":
             uploaded_file_rtf = st.file_uploader("Upload RTF file", type="rtf", accept_multiple_files=False)
 
@@ -573,8 +573,10 @@ def main():
             if st.button("Generate Report"):
                 hap.main(uploaded_file_rtf)
         if uploaded_pdf is not None:
-            if st.button("Generate Report"):
-                with st.spinner("Running EFLH calculation... Please wait."):
+            if start_page > end_page:
+                st.info("Please select right page number!")
+            elif st.button("Generate Report") and start_page <= end_page:
+                with st.spinner("Processing data... Please wait."):
                     extracted_data = []
                     with pdfplumber.open(uploaded_pdf) as pdf:
                         for i in range(start_page, end_page + 1):
@@ -593,9 +595,9 @@ def main():
 
                     if extracted_data:
                         df = pd.DataFrame(extracted_data, columns=[
-                            "Room Name", "Floor Area (m²)", "Ceiling Height (m)", "Building Weight (kg/m²)",
-                            "OA Req. 1 (L/s/person)", "OA Req. 2 (L/s·m²)", "Occupancy", "Sensible (W/person)",
-                            "Latent (W/person)", "Lighting", "Light-Unit", "Task Lighting", "Task-Light-Unit",
+                            "Room Name", "Floor Area (m²)", "Avg. Ceiling Height (m)", "Building Weight (kg/m²)",
+                            "OA Req. 1 (L/s/person)", "OA Req. 2 (L/s·m²)", "Occupancy (Person)", "Sensible (W/person)",
+                            "Latent (W/person)", "Overhead Lighting (Wattage)", "Lighting-Unit", "Task Lighting", "Task-Lighting-Unit",
                             "Electrical Equip.", "Electrical-Equip-Unit"
                         ])
 
