@@ -26,6 +26,7 @@ def get_LSB_report(name):
             # till LS-D encounter.
             if 'LS-C' in line:
                 numend = num
+                break
         # start from 1 line of LS-C report.
         numstart = lsc_count[0] 
         # lsc_rpt is now from LS-C to LS-D lines
