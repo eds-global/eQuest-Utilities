@@ -605,7 +605,7 @@ def main():
                         df = df[~df["Room Name"].astype(str).str.contains("U-Value", na=False)]
 
                         st.success("✅ Data extracted successfully!")
-                        st.dataframe(df, use_container_width=True)
+                        st.dataframe(df.reset_index(drop=True), use_container_width=True)
 
                         # Provide download button
                         output = BytesIO()
