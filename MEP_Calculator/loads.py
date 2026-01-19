@@ -914,11 +914,12 @@ def getProcessLoads(database, proposed, baseline, sim90, sim180, sim270):
     pv_a_pumps_p = get_PVA_Pumps(temp_file_path_proposed)
     pv_a_tower = get_PVA_Tower(temp_file_path_baseline)
     pv_a_tower_p = get_PVA_Tower(temp_file_path_proposed)
-    st.write(pv_a_tower)
+    # st.write(pv_a_tower)
 
     lv_d_proposed = get_LVB_Report(temp_file_path_proposed)
     lv_d_baseline = get_LVB_Report(temp_file_path_baseline)
     lvd_base = get_LVD_report(temp_file_path_baseline)
+    # st.write(lvd_base)
     df_new = lvc_exterior.merge(lvd_base, left_on="Surface", right_on="SURFACE", how="left") \
             .drop(columns=["SURFACE"])
     df_new = df_new.drop(columns=['RUNNAME', 'U-VALUE_Wall(BTU/HR-SQFT-F)', 'U-VALUE_Wall_Wind(BTU/HR-SQFT-F)', 'AREA_Wall_Wind(SQFT)'])

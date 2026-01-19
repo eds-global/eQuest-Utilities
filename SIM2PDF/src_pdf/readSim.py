@@ -63,15 +63,15 @@ def get_report_as_pdf(report_content, folder_name, path):
     pdf.set_font("Courier", size=6.5)
 
     # Add a page with increased horizontal width
-    pdf.add_page(orientation='L')  # 'L' stands for landscape orientation
+    pdf.add_page()  # 'L' stands for landscape orientation
     pdf.set_auto_page_break(auto=True, margin=10) # Setting automatic page break with a margin of 10
 
     # Split the report content by lines
     report_lines = report_content.strip().split('\n')
-
+    
     # Add content from the SIM report, starting a new page for each section starting with "REPORT"
     for line in report_lines:
-        if "RUN" in line:
+        if "RUN" in line and "RUN-" not in line:
             pdf.add_page()  # Start a new page
         pdf.multi_cell(0, 4, line)  # Adjust spacing to 5
 
@@ -82,15 +82,20 @@ def get_report_as_pdf(report_content, folder_name, path):
     st.markdown(f"<span style='color:green;'>✅ Generated - {folder_name}!</span>", unsafe_allow_html=True)
 
     # Remove the first page using PyPDF2
+    # Remove first page ONLY if it is empty
     with open(temp_file, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         writer = PyPDF2.PdfWriter()
-        for page_num in range(1, len(reader.pages)):
-            writer.add_page(reader.pages[page_num])
-        
-        # Write to the final PDF file
+
+        for i, page in enumerate(reader.pages):
+            text = page.extract_text()
+            if i == 0 and (not text or text.strip() == ""):
+                continue   # skip empty first page only
+            writer.add_page(page)
+
         with open(file_path, 'wb') as output_file:
             writer.write(output_file)
+
 
     # Remove the temporary file
     os.remove(temp_file)
@@ -138,22 +143,31 @@ def extractReport(input_sim_files, reports):
     for name in simfiles:
         with open(name, "r", encoding="cp1252", errors="ignore") as f:
             f_list = f.readlines()
-            for num, line in enumerate(f_list):
-                for r in reports:
-                    if r in line:
-                        rptstart = num - 2
-                        lines = 0
-                        for line in f_list[rptstart + 3:]:
-                            if "REPORT" in line:
-                                rptlen = lines
+            for r in sorted(reports):
+                num = 0
+                while num < len(f_list):
+                    line = f_list[num]
+
+                    # Match ONLY report headers like: REPORT- SV-A
+                    if line.strip().startswith("REPORT-") and f" {r} " in line:
+                        rptstart = num   # ✅ start exactly at REPORT line (fixes first report)
+
+                        rptlen = 0
+                        for line2 in f_list[num + 1:]:
+                            if line2.strip().startswith("REPORT-"):
                                 break
-                            lines += 1
-                        section = f_list[rptstart:rptstart + rptlen + 4]
+                            rptlen += 1
+
+                        section = f_list[rptstart:rptstart + rptlen + 1]
+
                         file_name = "Reports_" + os.path.basename(name)
                         with open(os.path.join(output_directory, file_name), "a") as output:
                             for l in section:
                                 output.write(l)
-                        break
+
+                        num = rptstart + rptlen + 1  # continue scanning
+                    else:
+                        num += 1
 
     # Clean generated SIM files in "Report Outputs" folder
     for filename in os.listdir(output_directory):
