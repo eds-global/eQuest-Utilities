@@ -746,9 +746,99 @@ def main():
 if __name__ == "__main__":
     main()
     
-st.markdown('<hr style="border:1px solid black">', unsafe_allow_html=True)
+# st.markdown('<hr style="border:1px solid black">', unsafe_allow_html=True)
+# st.markdown(
+#     """
+#     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+#     <style>
+#         .footer {
+#             background-color: #f8f9fa;
+#             padding: 20px 0;
+#             color: #333;
+#             display: flex;
+#             justify-content: space-between;
+#             align-items: center;
+#             text-align: center;
+#         }
+#         .footer .logo {
+#             flex: 1;
+#         }
+#         .footer .logo img {
+#             max-width: 150px;
+#             height: auto;
+#         }
+#         .footer .social-media {
+#             flex: 2;
+#         }
+#         .footer .social-media p {
+#             margin: 0;
+#             font-size: 16px;
+#         }
+#         .footer .icons {
+#             margin-top: 10px;
+#         }
+#         .footer .icons a {
+#             margin: 0 10px;
+#             color: #666;
+#             text-decoration: none;
+#             transition: color 0.3s ease;
+#         }
+#         .footer .icons a:hover {
+#             color: #0077b5; /* LinkedIn color as default */
+#         }
+#         .footer .icons a .fab {
+#             font-size: 28px;
+#         }
+#         .footer .additional-content {
+#             margin-top: 10px;
+#         }
+#         .footer .additional-content h4 {
+#             margin: 0;
+#             font-size: 18px;
+#             color: #007bff;
+#         }
+#         .footer .additional-content p {
+#             margin: 5px 0;
+#             font-size: 16px;
+#         }
+#     </style>
+#    <div class="footer">
+#         <div class="social-media" style="flex: 2;">
+#             <p>&copy; 2024. All Rights Reserved</p>
+#             <div class="icons">
+#                 <a href="https://twitter.com/edsglobal?lang=en" target="_blank"><i class="fab fa-twitter" style="color: #1DA1F2;"></i></a>
+#                 <a href="https://www.facebook.com/Environmental.Design.Solutions/" target="_blank"><i class="fab fa-facebook" style="color: #4267B2;"></i></a>
+#                 <a href="https://www.instagram.com/eds_global/?hl=en" target="_blank"><i class="fab fa-instagram" style="color: #E1306C;"></i></a>
+#                 <a href="https://www.linkedin.com/company/environmental-design-solutions/" target="_blank"><i class="fab fa-linkedin" style="color: #0077b5;"></i></a>
+#             </div>
+#             <div class="additional-content">
+#                 <h4>Contact Us</h4>
+#                 <p>Email: info@edsglobal.com | Phone: 91 . 11 . 4056 8633</p>
+#                 <p>Follow us on social media for the latest updates and news.</p>
+#             </div>
+#         </div>
+#     </div>
+#     """, unsafe_allow_html=True
+# )
+
+# with st.container():
+#     st.markdown(
+#         """
+#         <div style='display: flex; align-items: center; gap: 8px; font-size: 19px;'>
+#             <span style='font-weight: 600;'>Website Visitors Count:</span>
+#             <a href="https://equest-utilities-edsglobal.streamlit.app/" target="_blank">
+#                 <img src="https://hitwebcounter.com/counter/counter.php?page=15322595&style=0019&nbdigits=5&type=ip&initCount=0"
+#                      title="Counter Widget" alt="Visit counter For Websites" border="0"
+#                      style="height: 20px;" />
+#             </a>
+#         </div>
+#         """,
+#         unsafe_allow_html=True
+#     )
+st.markdown('<hr style="border:1px solid red">', unsafe_allow_html=True)
+st.image("images/image123456.png", width=2000) 
 st.markdown(
-    """
+        """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .footer {
@@ -802,36 +892,14 @@ st.markdown(
             font-size: 16px;
         }
     </style>
-   <div class="footer">
-        <div class="social-media" style="flex: 2;">
-            <p>&copy; 2024. All Rights Reserved</p>
-            <div class="icons">
-                <a href="https://twitter.com/edsglobal?lang=en" target="_blank"><i class="fab fa-twitter" style="color: #1DA1F2;"></i></a>
-                <a href="https://www.facebook.com/Environmental.Design.Solutions/" target="_blank"><i class="fab fa-facebook" style="color: #4267B2;"></i></a>
-                <a href="https://www.instagram.com/eds_global/?hl=en" target="_blank"><i class="fab fa-instagram" style="color: #E1306C;"></i></a>
-                <a href="https://www.linkedin.com/company/environmental-design-solutions/" target="_blank"><i class="fab fa-linkedin" style="color: #0077b5;"></i></a>
-            </div>
-            <div class="additional-content">
-                <h4>Contact Us</h4>
-                <p>Email: info@edsglobal.com | Phone: 91 . 11 . 4056 8633</p>
-                <p>Follow us on social media for the latest updates and news.</p>
-            </div>
-        </div>
+    <div style="text-align:center; font-size:14px;">
+        Email: <a href="mailto:info@edsglobal.com">info@edsglobal.com</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+        Phone: +91 . 11 . 4056 8633&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+        <a href="https://twitter.com/edsglobal?lang=en" target="_blank"><i class="fab fa-twitter" style="color:#1DA1F2; margin:0 6px;"></i></a>
+        <a href="https://www.facebook.com/Environmental.Design.Solutions/" target="_blank"><i class="fab fa-facebook" style="color:#4267B2; margin:0 6px;"></i></a>
+        <a href="https://www.instagram.com/eds_global/?hl=en" target="_blank"><i class="fab fa-instagram" style="color:#E1306C; margin:0 6px;"></i></a>
+        <a href="https://www.linkedin.com/company/environmental-design-solutions/" target="_blank"><i class="fab fa-linkedin" style="color:#0077b5; margin:0 6px;"></i></a>
     </div>
-    """, unsafe_allow_html=True
+    """,
+    unsafe_allow_html=True
 )
-
-with st.container():
-    st.markdown(
-        """
-        <div style='display: flex; align-items: center; gap: 8px; font-size: 19px;'>
-            <span style='font-weight: 600;'>Website Visitors Count:</span>
-            <a href="https://equest-utilities-edsglobal.streamlit.app/" target="_blank">
-                <img src="https://hitwebcounter.com/counter/counter.php?page=15322595&style=0019&nbdigits=5&type=ip&initCount=0"
-                     title="Counter Widget" alt="Visit counter For Websites" border="0"
-                     style="height: 20px;" />
-            </a>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
