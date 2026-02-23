@@ -31,6 +31,7 @@ def main(uploaded_file):
 
         report_functions = [
             (ls_c.get_LSC_report, 'LSC.csv', 'lsc'),
+            (ls_c.get_LSC_losses_report, 'LSC_LOSS.csv', 'lsc_loss'),
             (lv_d.get_LVD_report, 'LVD.csv', 'lvd'),
             (lvd_summary.get_LVD_Summary_report, 'LVD_Summary.csv', 'lvd_Summary'),
             (pv_a.get_PVA_report, 'PVA.csv', 'pva'),
