@@ -3,7 +3,7 @@ import streamlit as st
 import tempfile
 from zipfile import ZipFile
 import re
-from SIM_Parser.src_sim import lv_b, ls_c, lv_d, pv_a, sv_a, beps, bepu, lvd_summary, sva_zone, ps_e, ps_f, ls_b
+from SIM_Parser.src_sim import lv_b, ls_c, lv_d, pv_a, sv_a, beps, bepu, lvd_summary, sva_zone, ps_e, ps_f, ls_b, lv_h
 
 def get_report_and_save(report_function, sim_path, file_suffix):
     try:
@@ -43,6 +43,7 @@ def main(uploaded_file):
             (ps_e.get_PSE_report, 'PSE.csv', 'pse'),
             (ps_f.get_PSF_report, 'PSF.csv', 'psf'),
             (ls_b.get_LSB_report, 'LSB.csv', 'lsb'),
+            (lv_h.get_LVH_report, 'LVH.csv', 'lvh')
         ]
         
         for report_function, file_name, suffix in report_functions:
