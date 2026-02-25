@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 from io import StringIO
+import re
 
 # Function to replace consecutive duplicates with &D
 def replace_consecutive_duplicates(values):

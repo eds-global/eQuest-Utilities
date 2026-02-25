@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import tempfile
 from src import ps_e 
+import re
 
 st.set_page_config(
     page_title="MEP Calculator",

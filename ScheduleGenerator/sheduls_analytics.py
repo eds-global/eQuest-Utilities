@@ -4,6 +4,7 @@ from ScheduleGenerator.src import sh1
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+import re
 
 def get_file_extension(uploaded_file):
     return uploaded_file.name.split('.')[-1]

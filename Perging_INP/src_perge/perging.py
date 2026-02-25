@@ -1,3 +1,5 @@
+import re
+
 def perging_data_annual(data):
     with open(data, 'r') as file:
         data = file.readlines()

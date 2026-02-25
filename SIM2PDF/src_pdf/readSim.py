@@ -8,6 +8,7 @@ from pathlib import Path
 import fnmatch
 import tempfile
 import zipfile
+import re
 
 # -------------------------------
 # READ SIM FILE

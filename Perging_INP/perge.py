@@ -1,6 +1,7 @@
 import os
 import streamlit as st
 import tempfile
+import re
 from Perging_INP.src_perge import perging, CLM_delete
 
 def update_inp_file(uploaded_file):

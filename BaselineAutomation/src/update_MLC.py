@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 
 def resource_path(relative_path):

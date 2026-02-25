@@ -16,6 +16,7 @@ def get_report_and_save(report_function, inp_path, file_suffix):
         if os.path.isfile(file_path):
             os.remove(file_path)
         report.to_csv(file_path, index=False)
+        st.markdown(f"<span style='color:green;'>✅ {file_suffix} Generated!</span>", unsafe_allow_html=True)
         return file_path
     except Exception as e:
         st.error(f"Error generating {file_suffix} report: {e}")
@@ -90,12 +91,12 @@ def main(uploaded_file):
                     f.write(uploaded_file.getbuffer())
                 
                 # Generate reports
-                sys_report_path = get_report_and_save(hvac_system.get_HVAC_System_report, inp_path, 'Sys_INP')
-                zone_report_path = get_report_and_save(hvac_system.get_HVAC_Zone_report, inp_path, 'Zone_INP')
-                polygon_path = get_report_and_save(extract_polygons, inp_path, 'Polygon')
+                sys_report_path = get_report_and_save(hvac_system.get_HVAC_System_report, inp_path, 'System Information')
+                zone_report_path = get_report_and_save(hvac_system.get_HVAC_Zone_report, inp_path, 'Zone Information')
+                polygon_path = get_report_and_save(extract_polygons, inp_path, 'Polygon Information')
                 
                 if sys_report_path and zone_report_path:
-                    st.success("INP Parsed Successfully!!")
+                    st.markdown(f"<span style='color:green;'></span>", unsafe_allow_html=True)
                     
                     # Create a zip file containing both reports
                     zip_file_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}_reports.zip")

@@ -5,6 +5,7 @@ from fpdf import FPDF
 from SIM2PDF.src_pdf import readSim
 import PyPDF2
 import tempfile
+import re
 
 # Function to process and convert SIM files to PDF
 def main(reports, input_sim_files):

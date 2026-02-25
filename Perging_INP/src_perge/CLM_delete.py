@@ -1,3 +1,5 @@
+import re
+
 def perging_data_const(data):
     start_marker = "Materials / Layers / Constructions"
     end_marker = "Glass Types"

@@ -7,6 +7,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import io
+import re
 
 def getINPSimFiles(input_simp_path, input_simb_path):
     if input_simp_path is not None:

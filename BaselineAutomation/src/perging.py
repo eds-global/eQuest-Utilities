@@ -1,3 +1,5 @@
+import re
+
 def perging_data_annual(data):
 
     start_marker = "Annual Schedules"

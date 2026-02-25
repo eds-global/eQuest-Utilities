@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 from PyPDF2 import PdfReader
+import re
 
 # Function to extract room data from a single block of text
 def extract_room_data(text):
