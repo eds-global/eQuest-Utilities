@@ -112,7 +112,7 @@ def main():
         st.session_state.script_choice = "about"  # Set default to "about"
             
     logo_image_path = "images/eQcb_142.gif"
-    col1, col2, col3 = st.columns([1,1,0.5])
+    col1, col2, col3 = st.columns([1,1.2,0.2])
     with col1:
         st.image(logo_image_path, width=60)
     with col2:
@@ -198,7 +198,7 @@ def main():
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("""
-            <h5 style="color:red;">🌟 Start your Success with eQUEST Utilities</h5>
+            <h4 style="color:red;">🌟 Start your Success with eQUEST Utilities</h4>
     
             eQUEST Utilities is a comprehensive suite of tools designed to help you work with eQUEST more efficiently. 
             Our utilities include:
@@ -545,7 +545,7 @@ def main():
         st.info("This feature will be available soon!")
     
     elif st.session_state.script_choice == "hap":
-        st.markdown("""<h5 style="color:blue;">🔧 HAP Parser</h5>
+        st.markdown("""<h5 style="color:red;">🔧 HAP Parser</h5>
         <b>Purpose:</b> Excel output generated from the “.RTF” and ".PDF" files.
         The file contains Space Name, Floor Area (ft²), Average Ceiling Height (ft), Occupancy (People), Wattage (Overhead Lighting), Wattage (Task Lighting), Wattage (Electrical Equipment)
         """, unsafe_allow_html=True)
