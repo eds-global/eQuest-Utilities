@@ -182,16 +182,18 @@ def main():
     # with col12:
     #     if st.button("EXE and Resources", key="button_exe_resources"):
     #         st.session_state.script_choice = "exe"
+    # with col12:
+    #     if st.button("IGBC Green 🏡", key="references"): #Queries
+    #         st.session_state.script_choice = "reference".
     with col12:
-        if st.button("IGBC Green 🏡", key="references"): #Queries
-            st.session_state.script_choice = "reference"
+        if st.button("Energy Report", key="energy"): #Queries
+            st.session_state.script_choice = "energy"
     # with col14:
     #     if st.button("Calibration Tool", key="button_contact"): #Queries
     #         st.session_state.script_choice = "cal"
     with col13:
         if st.button("HAP Parser", key="HAP_calculator"): #Queries
             st.session_state.script_choice = "hap"
-    
             
     #Based on the user selection, display appropriate input fields and run the script
     if st.session_state.script_choice == "about":
@@ -522,7 +524,7 @@ def main():
             "Select Reports",
             ["LV-B", "LV-D", "LV-M", "LV-A", "LV-C", "LV-E", "LV-F", "LV-G", "LV-H", "LV-I", "LV-J", 
              "LS-A", "LS-B", "LS-D", "LS-L", "LV-N", "LS-C", "LS-E", "LS-F", "LS-K", "PV-A", "BEPS", 
-             "BEPU", "SV-A", "PS-E", "PS-F", "SS-A", "SS-B", "SS-C", "SS-D", "SS-E", "SS-M"],
+             "BEPU", "SV-A", "SV-B", "PS-E", "PS-F", "SS-A", "SS-B", "SS-C", "SS-D", "SS-E", "SS-M"],
             ["LV-B"]
         )
         
@@ -541,6 +543,13 @@ def main():
         st.markdown("""
         <h4 style="color:blue;">🔧 Calibration Tool</h4>
         <b>Purpose:</b> This tool calibrates energy simulation models to align with actual measured data, ensuring greater accuracy in predicting energy performance. By refining the model based on real-world usage, it enhances the reliability of energy audits, retrofits, and performance assessments.
+        """, unsafe_allow_html=True)
+        st.info("This feature will be available soon!")
+    
+    elif st.session_state.script_choice == "energy":
+        st.markdown("""
+        <h4 style="color:blue;">🔧 Energy Analysis Report</h4>
+        <b>Purpose:</b> Quick summary of overall building energy performance. Highlights key insights and major observations.
         """, unsafe_allow_html=True)
         st.info("This feature will be available soon!")
     

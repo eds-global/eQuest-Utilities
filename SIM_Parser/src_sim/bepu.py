@@ -84,7 +84,7 @@ def get_BEPU_report(name):
             bepu_df = pd.concat([other_df, bepu_df], axis=1)
     
             # alloting columns name to each columns
-            bepu_df.columns = ['BEPU-SOURCE', 'BEPU-UNIT', 'LIGHTS', 'TASK-LIGHTS', 'MISQ-EQUIP', 'SPACE-HEATING',
+            bepu_df.columns = ['BEPU-SOURCE', 'BEPU-UNIT', 'LIGHTS', 'TASK-LIGHTS', 'MISC-EQUIP', 'SPACE-HEATING',
                                 'SPACE-COOLING', 'HEAT-REJECT', 'PUMPS & AUX', 'VENT FANS', 'REFRING-DISPLAY',
                                 'HT-PUMP-SUPPLEMENT', 'DOMEST-HOT-WTR', 'EXT-USAGE', 'TOTAL']
             # take that rows in 'BEPU-UNIT' which contains '.' and ''
@@ -98,7 +98,7 @@ def get_BEPU_report(name):
             bepu_df = bepu_df[~bepu_df['LIGHTS'].str.contains(r'\:|^\d+$')]
     
             # alloting columns name to each columns
-            bepu_df.columns = ['BEPU-SOURCE', 'BEPU-UNIT', 'LIGHTS', 'TASK-LIGHTS', 'MISQ-EQUIP', 'SPACE-HEATING',
+            bepu_df.columns = ['BEPU-SOURCE', 'BEPU-UNIT', 'LIGHTS', 'TASK-LIGHTS', 'MISC-EQUIP', 'SPACE-HEATING',
                                 'SPACE-COOLING', 'HEAT-REJECT', 'PUMPS & AUX', 'VENT FANS', 'REFRING-DISPLAY',
                                 'HT-PUMP-SUPPLEMENT', 'DOMEST-HOT-WTR', 'EXT-USAGE', 'TOTAL']
             
@@ -116,7 +116,7 @@ def get_BEPU_report(name):
             return bepu_df
     except Exception as e:
         print(f"An error occurred: {e}")
-        columns = ['BEPU-SOURCE', 'BEPU-UNIT', 'LIGHTS', 'TASK-LIGHTS', 'MISQ-EQUIP', 'SPACE-HEATING',
+        columns = ['BEPU-SOURCE', 'BEPU-UNIT', 'LIGHTS', 'TASK-LIGHTS', 'MISC-EQUIP', 'SPACE-HEATING',
                                 'SPACE-COOLING', 'HEAT-REJECT', 'PUMPS & AUX', 'VENT FANS', 'REFRING-DISPLAY',
                                 'HT-PUMP-SUPPLEMENT', 'DOMEST-HOT-WTR', 'EXT-USAGE', 'TOTAL']
         return pd.DataFrame(columns=columns)

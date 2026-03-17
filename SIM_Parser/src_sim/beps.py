@@ -87,7 +87,7 @@ def get_BEPS_report(name):
         beps_df = pd.concat([other_df, beps_df], axis=1)
 
         # alloting columns name to each columns
-        beps_df.columns = ['BEPS-SOURCE', 'BEPS-UNIT', 'LIGHTS', 'TASK-LIGHTS', 'MISQ-EQUIP', 'SPACE-HEATING',
+        beps_df.columns = ['BEPS-SOURCE', 'BEPS-UNIT', 'LIGHTS', 'TASK-LIGHTS', 'MISC-EQUIP', 'SPACE-HEATING',
                             'SPACE-COOLING', 'HEAT-REJECT', 'PUMPS & AUX', 'VENT FANS', 'REFRING-DISPLAY',
                             'HT-PUMP-SUPPLEMENT', 'DOMEST-HOT-WTR', 'EXT-USAGE', 'TOTAL']
         

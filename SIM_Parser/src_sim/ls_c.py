@@ -92,6 +92,7 @@ def get_LSC_report(name):
                 # till LS-D encounter.
                 if 'LS-D' in line:
                     numend = num
+                    break
             # start from 1 line of LS-C report.
             numstart = lsc_count[0] 
             # lsc_rpt is now from LS-C to LS-D lines
@@ -100,6 +101,7 @@ def get_LSC_report(name):
             # create empty list to store the string into list format.
             lsc_str = []
             space = []
+            time_str = []
             # move in each line of lsc_rpt based on condition and store in lsc_str list
             for line in lsc_rpt:
                 line = re.sub(r'(\d)\.(\d+)\.', r'\1. \2.', line)
@@ -109,6 +111,8 @@ def get_LSC_report(name):
                     or 'LIGHT     TO SPACE' in line or 'EQUIPMENT TO SPACE' in line or 'PROCESS   TO SPACE'
                     in line or 'INFILTRATION' in line or 'TOTAL' in line and '/' not in line):
                     lsc_str.append(line)
+                if ('TIME' in line and 'AM' in line) or ('PM' in line and 'TIME' in line):
+                    time_str.append(line)
             
             # result list to store filtered columns. after 7th column from last remaining values in 1 column. 
             result = []  
@@ -123,11 +127,24 @@ def get_LSC_report(name):
                 lsc_list.insert(0,space_name)
                 # Append lvd_list to result
                 result.append(lsc_list)
-            
+            resultTime = []
+            for line in time_str:
+                time_list = []
+                splitter1 = line.split()
+                space_name1 = " ".join(splitter1[:-6])
+                time_list=splitter1[-6:]
+                time_list.insert(0, space_name1)
+                resultTime.append(time_list)
+                
             # store lsc report in a dataframe
             lsc_df = pd.DataFrame(result)
+            time_df = pd.DataFrame(resultTime)
             # drop 2st, 4th, 6th and 7th column
             lsc_df.drop(lsc_df.columns[[1, 3, 5, 6]], axis=1, inplace=True)
+            time_df.drop(time_df.columns[[4, 5, 6]], axis=1, inplace=True)
+            time_df[1] = time_df[[1,2,3]].astype(str).agg(' '.join, axis=1)
+            time_df = time_df.drop(columns=[2,3])
+          
             # converting numbers to float.
             lsc_df.iloc[:, -2:] = lsc_df.iloc[:, -2:].apply(pd.to_numeric, errors='coerce')
     
@@ -142,13 +159,17 @@ def get_LSC_report(name):
             lsc_df.columns = range(lsc_df.shape[1])
             # transpose the dataframe to get 1st column as header of dataframe
             lsc_df = lsc_df.T
+            time_df = time_df.T
             lsc_df.columns = lsc_df.iloc[0]
+            time_df.columns = time_df.iloc[0]
             # drop 1st row
             lsc_df = lsc_df.drop(0)
+            time_df = time_df.drop(0)
             # lsc_dfs = lsc_df.loc[:, : 'TOTAL']
-            lsc_df = lsc_df.iloc[:, :13]
+            # lsc_df = lsc_df.iloc[:, :13]
             lsc_df.rename(columns={'TOTAL': 'TOTAL-LOAD(KW)'}, inplace=True)
-    
+            lsc_df = pd.concat([time_df, lsc_df], axis=1)
+            
         return lsc_df
     except Exception as e:
         print(f"An error occurred: {e}")
