@@ -99,7 +99,7 @@ def main():
 
     st.markdown("""
     <div style="border: 2px solid #ddd; padding: 15px; border-radius: 10px; background-color: #f9f9f9;">
-        <h4 style="color: red;">♻️ MEP Calculator</h4>
+        <h4 style="color: red;"> MEP Calculator</h4>
         <p>The <b>MEP Calculator</b> is a tool designed to support energy-efficient building projects, including LEED-certified initiatives. It helps update and analyze MEP performance values using simulation files.</p>
         <p><b>Purpose:</b> Evaluate performance outputs such as <b>Lighting</b>, <b>Shading & Fenestration</b>, and <b>Energy End-Use</b> metrics.</p>
         <p><b>Note:</b> For <span style="color:blue;"><b>Performance Outputs</b></span>, upload exactly <b>4 Baseline SIM files</b> (rotations: 0°, 90°, 180°, 270°) and <b>1 Proposed SIM file</b>.<br>

@@ -5,6 +5,7 @@ import pandas as pd
 from INP_Parser import inp_parserv01
 from Perging_INP import perge
 from SIM_Parser import sim_parserv01
+from EnergyReport import energy_report
 from SIM2PDF import sim_print
 from Polygon_Parser import polygon
 from streamlit_lottie import st_lottie
@@ -323,7 +324,7 @@ def main():
                 
     elif st.session_state.script_choice == "mepc":
         st.markdown("""
-        <h5 style="color:red;">♻️ MEPC Tool</h5>
+        <h5 style="color:red;">MEPC Tool</h5>
         Please upload your <b>.SIM files</b> generated from <i>eQUEST</i>.<br>
         🔹 Upload <b>all four baseline orientations</b> (0°, 90°, 180°, 270°) <b>plus the proposed file</b>.<br>
         🔹 For <b>Lighting</b> and <b>Process Load</b> evaluations, only the <b>0° baseline</b> and the <b>proposed file</b> are required.<br><br>
@@ -537,21 +538,194 @@ def main():
                 sim_print.main(reports_input, uploaded_files)
         st.markdown("""<h6 style="color:red;">Last Update</h6>
         <p style="font-size:14px; color:#888; font-style:italic; margin-top:-6px; margin-bottom:10px;">
-        <b>20th Jan, 2025: </b> Reports exported in <b>alphabetical order</b> instead of <b>SIM Files</b> sequence</p>""", unsafe_allow_html=True)
+        <b>27th March, 2026: </b> Hourly Data as Reports has been removed from output reports and exported in <b>alphabetical order</b> instead of <b>SIM Files</b> sequence</p>""", unsafe_allow_html=True)
        
     elif st.session_state.script_choice == "cal":
         st.markdown("""
         <h4 style="color:blue;">🔧 Calibration Tool</h4>
         <b>Purpose:</b> This tool calibrates energy simulation models to align with actual measured data, ensuring greater accuracy in predicting energy performance. By refining the model based on real-world usage, it enhances the reliability of energy audits, retrofits, and performance assessments.
         """, unsafe_allow_html=True)
+
         st.info("This feature will be available soon!")
     
     elif st.session_state.script_choice == "energy":
         st.markdown("""
-        <h4 style="color:blue;">🔧 Energy Analysis Report</h4>
+        <h5 style="color:red;">🔧 Energy Analysis Report</h5>
         <b>Purpose:</b> Quick summary of overall building energy performance. Highlights key insights and major observations.
         """, unsafe_allow_html=True)
-        st.info("This feature will be available soon!")
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            uploaded_0_file = st.file_uploader("Upload 0° SIM file", type="sim", accept_multiple_files=False)
+        with col2:
+            uploaded_90_file = st.file_uploader("Upload 90° SIM file", type="sim", accept_multiple_files=False)
+        with col3:
+            uploaded_180_file = st.file_uploader("Upload 180° SIM file", type="sim", accept_multiple_files=False)
+        with col4:
+            uploaded_270_file = st.file_uploader("Upload 270° SIM file", type="sim", accept_multiple_files=False)
+        with col5:
+            uploaded_proposed_file = st.file_uploader("Upload Proposed SIM file", type="sim", accept_multiple_files=False)
+        from docx import Document
+        import io
+        # -------------------------------
+        # 1. Replace Project Name (First Page)
+        # -------------------------------
+        def replace_project_name(doc, new_name):
+            for para in doc.paragraphs:
+                if "MFAR" in para.text:
+                    for run in para.runs:
+                        if "MFAR Red Sanders" in run.text:
+                            run.text = run.text.replace("MFAR Red Sanders", new_name)
+
+        # -------------------------------
+        # 2. Update 4th Column in ALL tables
+        # -------------------------------
+        def update_4th_column(doc, new_value):
+            for table in doc.tables:
+                for row in table.rows:
+                    if len(row.cells) >= 4:
+                        # Skip header row (optional)
+                        if "Baseline" in row.cells[0].text or "Alternative" in row.cells[0].text:
+                            continue
+                        row.cells[3].text = str(new_value)
+
+        # -------------------------------
+        # 3. Main Modify Function
+        # -------------------------------
+        def modify_docx(template_path, project_name, col_value):
+            doc = Document(template_path)
+
+            # Step 1: Replace project name
+            replace_project_name(doc, project_name)
+
+            # Step 2: Update 4th column
+            update_4th_column(doc, col_value)
+
+            # Save to memory
+            buffer = io.BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+
+            return buffer
+        import zipfile
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            project_name = st.text_input("Project Name")
+        with col2:
+            job_no = st.text_input("Job No")
+        with col3:
+            date = st.date_input("Date")
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        with col1:
+            loc = st.text_input("Location")
+        with col2:
+            prepared_by = st.text_input("Prepared By")
+        with col3:
+            reviewed_by = st.text_input("Riviewed By")
+        with col4:
+            authorised_by = st.text_input("Authorised By")
+        with col5:
+            scope = st.text_input("Scope")
+        with col6:
+            cond_area = st.text_input("Net Conditioned Area (ft²)")
+        # ✅ Your fixed template path
+        TEMPLATE_PATH = r"D:\EDS\S2302_eQuest_Automation\S2302.2 eQuest Utilities\git\MEPC\EnergyReport\Energy_Analysis_Report_Tempelate.docx"
+        ORIGINAL_NAME = "MFAR Red Sanders"
+        if st.button("Generate Report"):
+
+            if not os.path.exists(TEMPLATE_PATH):
+                st.error("Template file not found!")
+            else:
+                with open(TEMPLATE_PATH, "rb") as f:
+                    input_bytes = f.read()
+
+                zip_in = zipfile.ZipFile(io.BytesIO(input_bytes))
+
+                output_buffer = io.BytesIO()
+                zip_out = zipfile.ZipFile(output_buffer, "w")
+
+                for item in zip_in.infolist():
+                    data = zip_in.read(item.filename)
+
+                    if item.filename.endswith(".xml"):
+                        try:
+                            text = data.decode("utf-8")
+
+                            # ✅ Replace only if different
+                            if project_name.strip().lower() != ORIGINAL_NAME.lower():
+                                # Cover page
+                                if project_name.strip().lower() != ORIGINAL_NAME.lower():
+                                    text = text.replace("MFAR Red Sanders", project_name)
+                                    text = text.replace("Bangalore", "")
+
+                                # ✅ Quality Control Page replacements
+                                text = text.replace("24169", job_no if job_no else "24169")
+
+                                text = text.replace(
+                                    "TCS Pune projects done by Yasir Iqbal",
+                                    project_name if project_name else "TCS Pune projects done by Yasir Iqbal"
+                                )
+
+                                text = text.replace(
+                                    ", India",
+                                    f"{loc}, India" if loc else ", India"
+                                )
+
+                                text = text.replace(
+                                    "03/06/2025",
+                                    date.strftime("%d/%m/%Y") if date else "03/06/2025"
+                                )
+
+                                text = text.replace(
+                                    "Anand Sharma",
+                                    prepared_by if prepared_by else "Anand Sharma"
+                                )
+
+                                text = text.replace(
+                                    "Robin Jain",
+                                    reviewed_by if reviewed_by else "Robin Jain"
+                                )
+
+                                text = text.replace(
+                                    "Mayank Bhatnagar",
+                                    authorised_by if authorised_by else "Mayank Bhatnagar"
+                                )
+
+                                # Optional fields (if present somewhere else)
+                                text = text.replace(
+                                    "Scope Placeholder",
+                                    scope if scope else "Scope Placeholder"
+                                )
+
+                                text = text.replace(
+                                    "Area Placeholder",
+                                    cond_area if cond_area else "Area Placeholder"
+                                )
+
+                            data = text.encode("utf-8")
+                        except:
+                            pass
+
+                    zip_out.writestr(item, data)
+
+                zip_out.close()
+                output_buffer.seek(0)
+
+                st.success("Report Generated Successfully!")
+
+                st.download_button(
+                    label="Download Report",
+                    data=output_buffer,
+                    file_name="Energy_Report.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+        # energy_template = f'EnergyReport/Energy_Analysis_Report_Tempelate.docx'
+        # # if uploaded_0_file and uploaded_90_file and uploaded_180_file and uploaded_270_file and uploaded_proposed_file:
+        # col1, col2, col3, col4, col5 = st.columns(5)
+        # with col1:
+
+        # if st.button("Generate Report"):
+        #     energy_report.main(uploaded_0_file, uploaded_90_file, uploaded_180_file, uploaded_270_file, uploaded_proposed_file, energy_template)
+        # st.info("This feature will be available soon!")
     
     elif st.session_state.script_choice == "hap":
         st.markdown("""<h5 style="color:red;">🔧 HAP Parser</h5>

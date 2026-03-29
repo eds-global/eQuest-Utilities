@@ -71,7 +71,7 @@ st.markdown(
     </style>
 
     <div class="fixed-header">
-        <h4>♻️ LEED MEPC Tool</h4>
+        <h4>LEED MEPC Tool</h4>
         <div class="nav-links">
             <a href="/" target="_self">Home</a>
             <a href="#start">Getting Started</a>
@@ -157,18 +157,10 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     csv_file = r'MEP_Calculator/tables/MEP Calculator.csv'
     dfsss = pd.read_csv(csv_file)
     db = pd.read_csv(databse)
-    try:
-        summary_df, sv_a_df, sv_a_zone_df, sv_a_df_p, pva_df, pva_primary, ps_e_df_b, lv_d_summ_p, lv_d_summ_b, lv_g_baseline, lv_g_proposed, ps_e_proposed, pse_90, pse_180, pse_270, lvd_base, pva_pumps, pva_loop_p, pva_pumps_p, pva_primary_p, pva_tower, pva_tower_p = loads.getProcessLoads(db, sim_file_proposed_for_use1, sim_file_for_use1, sim_file_for_use90, sim_file_for_use180, sim_file_for_use270)
-    except Exception as e:
-        st.warning(f"Please uplpoad right SIM Files to Proceed!")
-    # -------------------------
-    # Section 2 - Opaque Assemblies
-    # -------------------------
+    summary_df, sv_a_df, sv_a_zone_df, sv_a_df_p, pva_df, pva_primary, ps_e_df_b, lv_d_summ_p, lv_d_summ_b, lv_g_baseline, lv_g_proposed, ps_e_proposed, pse_90, pse_180, pse_270, lvd_base, pva_pumps, pva_loop_p, pva_pumps_p, pva_primary_p, pva_tower, pva_tower_p = loads.getProcessLoads(db, sim_file_proposed_for_use1, sim_file_for_use1, sim_file_for_use90, sim_file_for_use180, sim_file_for_use270)
     st.markdown('<div id="opaque" class="section"></div>', unsafe_allow_html=True)
     st.markdown("""<br><br><br>""",unsafe_allow_html=True)
     st.markdown('<h5 style="color:red;">Opaque Assemblies</h5>',unsafe_allow_html=True)
-    # st.write(lvd_base)
-    # if lvd_base.empty == False:
     try:
         roof = lvd_base[lvd_base['AZIMUTH'].str.upper() == "ROOF"]
         floor = lvd_base[lvd_base['AZIMUTH'].str.upper() == "FLOOR"]
@@ -637,80 +629,6 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
         undergrnd_wind_area_p  = get_val(lv_d_summ_p, "UNDERGRND",   "WINDOW(AREA)(SQFT)")
         wall_roof_wind_area_p  = get_val(lv_d_summ_p, "WALLS+ROOFS", "WINDOW(AREA)(SQFT)")
 
-
-        # north_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # east_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'EAST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # west_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'WEST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # north_east_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH-EAST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_east_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH-EAST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_west_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH-WEST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # north_west_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH-WEST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # roof_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'ROOF', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # allWalls_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'ALL WALLS', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # undergrnd_wall_u = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'UNDERGRND', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-
-        # north_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # south_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # east_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'EAST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # west_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'WEST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # north_east_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH-EAST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # south_east_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH-EAST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # south_west_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH-WEST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # north_west_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH-WEST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # roof_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'ROOF', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # allWalls_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'ALL WALLS', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # undergrnd_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'UNDERGRND', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # wall_roof_wind_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'WALLS+ROOFS', 'WINDOW(AREA)(SQFT)'].iloc[0]
-
-        # north_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH', 'WALL(AREA)(SQFT)'].iloc[0]
-        # south_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH', 'WALL(AREA)(SQFT)'].iloc[0]
-        # east_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'EAST', 'WALL(AREA)(SQFT)'].iloc[0]
-        # west_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'WEST', 'WALL(AREA)(SQFT)'].iloc[0]
-        # north_east_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH-EAST', 'WALL(AREA)(SQFT)'].iloc[0]
-        # south_east_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH-EAST', 'WALL(AREA)(SQFT)'].iloc[0]
-        # south_west_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'SOUTH-WEST', 'WALL(AREA)(SQFT)'].iloc[0]
-        # north_west_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'NORTH-WEST', 'WALL(AREA)(SQFT)'].iloc[0]
-        # roof_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'ROOF', 'WALL(AREA)(SQFT)'].iloc[0]
-        # allWalls_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'ALL WALLS', 'WALL(AREA)(SQFT)'].iloc[0]
-        # undergrnd_wall_area = lv_d_summ_b.loc[lv_d_summ_b['AZIMUTH'] == 'UNDERGRND', 'WALL(AREA)(SQFT)'].iloc[0]
-
-        # north_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # east_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'EAST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # west_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'WEST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # north_east_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH-EAST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_east_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH-EAST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_west_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH-WEST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # north_west_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH-WEST', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # roof_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'ROOF', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # allWalls_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'ALL WALLS', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-        # undergrnd_wind_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'UNDERGRND', 'AVERAGE(U-VALUE/WINDOWS)(BTU/HR-SQFT-F)'].iloc[0]
-
-        # north_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # east_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'EAST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # west_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'WEST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # north_east_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH-EAST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_east_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH-EAST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # south_west_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH-WEST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # north_west_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH-WEST', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # roof_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'ROOF', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # allWalls_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'ALL WALLS', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-        # undergrnd_wall_u_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'UNDERGRND', 'AVERAGE(U-VALUE/WALLS)(BTU/HR-SQFT-F)'].iloc[0]
-
-        # north_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # south_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # east_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'EAST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # west_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'WEST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # north_east_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH-EAST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # south_east_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH-EAST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # south_west_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'SOUTH-WEST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # north_west_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'NORTH-WEST', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # roof_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'ROOF', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # allWalls_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'ALL WALLS', 'WINDOW(AREA)(SQFT)'].iloc[0]
-        # undergrnd_wind_area_p = lv_d_summ_p.loc[lv_d_summ_p['AZIMUTH'] == 'UNDERGRND', 'WINDOW(AREA)(SQFT)'].iloc[0]
-
         north_wind_area = float(north_wind_area) + float(north_east_wind_area)
         east_wind_area = float(east_wind_area) + float(south_east_wind_area)
         south_wind_area = float(south_wind_area) + float(south_west_wind_area)
@@ -804,12 +722,12 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
 
         df2 = pd.DataFrame(data2, columns=columns2)
         st.markdown("""<h6 style="color:red;">🔴 Shading</h6>""", unsafe_allow_html=True)
-        st.write("🪷 Above-grade Wall and Glazing")
+        st.write("Above-grade Wall and Glazing")
         st.write(df1)
         if df1['Proposed']['Vertical Glazing Area (%)'][4] < 40.0 or df1['Baseline']['Vertical Glazing Area (%)'][4] < 40:
             st.info("ℹ️ The vertical glazing percentage is below 40%, supporting good thermal performance.")
 
-        st.write("🪷 Roof/Skylight & Thermal Blocks")
+        st.write("Roof/Skylight & Thermal Blocks")
         st.write(df2)
 
         # st.markdown("""<h6 style="color:red;">🔴 Fenestration</h6>""", unsafe_allow_html=True)
@@ -1300,10 +1218,6 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
         blank_row = {col: "" for col in df.columns}
         df = pd.concat([df.iloc[:1], pd.DataFrame([blank_row]), df.iloc[1:]], ignore_index=True)
 
-        # st.write(sv_a_df)
-        # st.write(sv_a_df_p)
-        # st.write(sv_a_zone_df)
-
         # ---------------------------------------
         # FILL 2nd ROW → Equivalent ASHRAE SYSTEM
         # ---------------------------------------
@@ -1372,29 +1286,6 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
             df.at[15, f"Proposed - {i}"] = "No"
             df.at[16, f"Proposed - {i}"] = "NA"
         df = df[:-4]
-        # # Loop through Baseline columns
-        # for i in range(1, num_cols + 1):
-        #     sys_val = df.at[2, f"Baseline - {i}"]   # <-- row 2, change index if needed
-
-        #     if isinstance(sys_val, str) and sys_val.startswith("Sys"):
-        #         system_no = int(sys_val.replace("Sys", ""))   # extract number
-        #         fanc = "Variable Speed" if 5 <= system_no <= 8 else "Constant Speed"
-        #     else:
-        #         fanc = ""
-
-        #     df.at[fan_control_row, f"Baseline - {i}"] = fanc
-
-        # # Loop through Proposed columns
-        # for i in range(1, num_cols_p + 1):
-        #     sys_val = df.at[2, f"Proposed - {i}"]
-
-        #     if isinstance(sys_val, str) and sys_val.startswith("Sys"):
-        #         system_no = int(sys_val.replace("Sys", "")) 
-        #         fanc = "Variable Speed" if 5 <= system_no <= 8 else "Constant Speed"
-        #     else:
-        #         fanc = ""
-
-        #     df.at[fan_control_row, f"Proposed - {i}"] = fanc
 
         # -------------------------
         # DISPLAY
@@ -1765,95 +1656,3 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     
     except Exception as e:
         st.warning(f"Please Select Spaces to get Started!")
-
-    # rows = df.iloc[:, 0].dropna().astype(str).tolist()
-    # options = df.iloc[:, 1].dropna().unique().tolist()
-    
-    # # Initialize session state
-    # if "results" not in st.session_state:
-    #     st.session_state["results"] = []
-    # if "disabled_items" not in st.session_state:
-    #     st.session_state["disabled_items"] = set()
-
-    # # Create the form
-    # with st.form("hvac_form"):
-    #     col1, col2 = st.columns([4, 1])
-    #     selected_items = []
-
-    #     # --- Left column: Checkboxes (3 per row) ---
-    #     with col1:
-    #         st.markdown(
-    #             '<h6 style="color:green;">📝 Model Input Paramter</h6>',
-    #             unsafe_allow_html=True
-    #         )
-    #         for i in range(0, len(rows), 4):
-    #             c1, c2, c3, c4 = st.columns(4)
-    #             for j, col in enumerate([c1, c2, c3, c4]):
-    #                 if i + j < len(rows):
-    #                     label = rows[i + j]
-    #                     key_name = f"check_{i}_{j}_{label}"
-
-    #                     is_disabled = label in st.session_state["disabled_items"]
-
-    #                     if col.checkbox(label, key=key_name, disabled=is_disabled):
-    #                         selected_items.append(label)
-
-    #     # --- Right column: Dropdown + Save button ---
-    #     with col2:
-    #         st.markdown(
-    #             '<h6 style="color:green;">🔌 Units</h6>',
-    #             unsafe_allow_html=True
-    #         )
-    #         dropdown_value = st.selectbox("Choose option", sorted(options), key="dropdown")
-    #         submitted = st.form_submit_button("Save")
-
-    #         if submitted:
-    #             if selected_items:
-    #                 for item in selected_items:
-    #                     # ✅ Only add if not already saved
-    #                     if not any(r["Selected Item"] == item for r in st.session_state["results"]):
-    #                         st.session_state["results"].append(
-    #                             {"Selected Item": item, "Option Chosen": dropdown_value}
-    #                         )
-    #                         st.session_state["disabled_items"].add(item)
-    #                 st.success("✅ Saved Successfully!")
-    #             else:
-    #                 st.warning("⚠️ Please select at least one item.")
-
-    # # --- After Save: show editable table with delete icons ---
-    # st.markdown("<hr style='border:1px solid red'>", unsafe_allow_html=True)  # red line
-    # # --- Header Section ---
-    # if st.session_state["results"]:
-    #     st.write("##### Review / Edit")
-    #     # Convert session_state results to DataFrame
-    #     result_df = pd.DataFrame(st.session_state["results"])
-
-    #     # Display each row with delete button
-    #     for idx, row in result_df.iterrows():
-    #         # Create columns dynamically: one column per value + 1 for delete button
-    #         col_widths = [3]*len(row) + [1]  # last column is for delete button
-    #         cols = st.columns(col_widths)
-
-    #         # Write values in the first N columns
-    #         for i, value in enumerate(row):
-    #             cols[i].write(value)
-
-    #         # Delete button in the last column
-    #         if cols[-1].button("🗑️", key=f"delete_{idx}"):
-    #             removed_item = st.session_state["results"].pop(idx)["Selected Item"]
-    #             st.session_state["disabled_items"].discard(removed_item)
-    #             st.rerun()
-
-    #     # Optionally rename columns for display
-    #     result_df.rename(columns={'Selected Item': 'Model Input Parameter', 
-    #                             'Option Chosen': 'Units'}, inplace=True)
-    #     st.write(result_df)
-
-    #     st.write(total_cooling)
-    #     st.write(total_heating)
-    #     st.write(fan_control)
-    #     st.write(sv_a_zone_df['SUPPLY-FLOW(CFM)'].sum())
-    #     st.write(sv_a_zone_df)
-    #     st.write(sv_a_df)
-    #     total_outside_air = pd.to_numeric(sv_a_zone_df['OUTISIDE-AIR-FLOW(CFM)'], errors='coerce').sum()
-    #     st.write(f"{total_outside_air:.2f}")

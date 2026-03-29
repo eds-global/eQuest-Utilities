@@ -19,7 +19,7 @@ def read_sim_file(sim_file_path):
         with open(sim_file_path, 'r', encoding='utf-8') as f: #  function is used to specify the character encoding of the file being opened
             return f.read()
     return None
-    
+
 # -------------------------------
 # CLEAN SIM CONTENT
 # -------------------------------
@@ -44,6 +44,8 @@ def clean_sim(name):
                 i += 1
             elif ("RUN" in lines[i] and i == len(lines) - 6):
                 i += 1
+            elif lines[i].strip().startswith("HOURLY REPORT-"):
+                i += 1   # ❌ skip this line completely
             else:
                 cleaned_lines.append(lines[i])  # Otherwise, keep the current line
                 i += 1  # Move to the next line
@@ -123,81 +125,101 @@ def generate_pdf(output_directory):
                 print("PDF report generation complete.\n")
     else:
         print("No SIM files found in the specified directory.")
-        
-# Function to extract relevent data from SIM file to based in input reports
+
+
+# -------------------------------
+# EXTRACT REPORTS (🔥 FULL FIX HERE)
+# -------------------------------
 def extractReport(input_sim_files, reports):
-    # Ensure the directory exists
-     # TEMP FOLDER
+
     temp_dir = tempfile.mkdtemp()
     output_directory = os.path.join(temp_dir, "Report Outputs")
     os.makedirs(output_directory, exist_ok=True)
 
     simfiles = []
-    # Save uploaded SIM files from Streamlit uploader
+
+    # Save uploaded SIM files
     for uploaded in input_sim_files:
         sim_path = os.path.join(temp_dir, uploaded.name)
         with open(sim_path, "wb") as f:
             f.write(uploaded.read())
         simfiles.append(sim_path)
 
-    # Process each SIM file
+    # -------------------------------
+    # PROCESS FILES
+    # -------------------------------
     for name in simfiles:
         with open(name, "r", encoding="cp1252", errors="ignore") as f:
             f_list = f.readlines()
-            for r in sorted(reports):
-                num = 0
-                while num < len(f_list):
-                    line = f_list[num]
 
-                    # Match ONLY report headers like: REPORT- SV-A
-                    if line.strip().startswith("REPORT-") and f" {r} " in line:
-                        rptstart = num   # ✅ start exactly at REPORT line (fixes first report)
+        for r in sorted(reports):
+            num = 0
 
-                        rptlen = 0
-                        for line2 in f_list[num + 1:]:
-                            if line2.strip().startswith("REPORT-"):
-                                break
-                            rptlen += 1
+            while num < len(f_list):
+                line = f_list[num].strip()
 
-                        section = f_list[rptstart:rptstart + rptlen + 1]
+                # ✅ STRICT MATCH
+                if re.match(rf"^REPORT-\s+{r}\b", line):
 
-                        file_name = "Reports_" + os.path.basename(name)
-                        with open(os.path.join(output_directory, file_name), "a") as output:
-                            for l in section:
-                                output.write(l)
+                    rptstart = num
+                    rptlen = 0
+                    skip_hourly = False
 
-                        num = rptstart + rptlen + 1  # continue scanning
-                    else:
-                        num += 1
+                    for line2 in f_list[num + 1:]:
+                        stripped = line2.strip()
 
-    # Clean generated SIM files in "Report Outputs" folder
+                        # 🚫 START skipping HOURLY block
+                        if stripped.startswith("HOURLY REPORT-"):
+                            skip_hourly = True
+                            continue
+
+                        # 🚫 STOP at next REPORT
+                        if re.match(r"^REPORT-\s+[A-Z0-9\-]+", stripped):
+                            break
+
+                        # 🚫 SKIP entire HOURLY content
+                        if skip_hourly:
+                            continue
+
+                        rptlen += 1
+
+                    section = f_list[rptstart:rptstart + rptlen + 1]
+
+                    file_name = "Reports_" + os.path.basename(name)
+
+                    with open(os.path.join(output_directory, file_name), "a") as output:
+                        output.writelines(section)
+
+                    num = rptstart + rptlen + 1
+
+                else:
+                    num += 1
+
+    # -------------------------------
+    # CLEAN FILES
+    # -------------------------------
     for filename in os.listdir(output_directory):
         file_path = os.path.join(output_directory, filename)
-        cleaned_content = clean_sim(file_path)  # Call your clean_sim function here
-        
-        # Convert cleaned_content to string if it's a list
-        if isinstance(cleaned_content, list):
-            cleaned_content = "\n".join(cleaned_content)
-        
-        # Write the cleaned content back to the file
+        cleaned_content = clean_sim(file_path)
+
         with open(file_path, "w") as cleaned_file:
             cleaned_file.write(cleaned_content)
 
-    # Generate PDF reports from the cleaned SIM files in "Report Outputs" folder
+    # -------------------------------
+    # GENERATE PDF
+    # -------------------------------
     generate_pdf(output_directory)
 
-    # -----------------------------------
-    # CREATE ZIP FOR DOWNLOAD
-    # -----------------------------------
+    # -------------------------------
+    # ZIP DOWNLOAD
+    # -------------------------------
     zip_path = os.path.join(temp_dir, "All_Reports.zip")
+
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for pdf in os.listdir(output_directory):
             if pdf.endswith(".pdf"):
                 zipf.write(os.path.join(output_directory, pdf), arcname=pdf)
 
-    # -----------------------------------
-    # STREAMLIT DOWNLOAD BUTTON
-    # -----------------------------------
     with open(zip_path, "rb") as f:
         st.download_button(
             label="📥 Download Reports (ZIP)",

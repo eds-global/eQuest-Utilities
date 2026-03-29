@@ -237,10 +237,10 @@ def generateFenestration(baseline, proposed):
 
     df2 = pd.DataFrame(data2, columns=columns2)
     st.markdown("""<h6 style="color:red;">🔴 Shading</h6>""", unsafe_allow_html=True)
-    st.write("🪷 Above-grade Wall and Glazing")
+    st.write("Above-grade Wall and Glazing")
     st.write(df1, "\n")
 
-    st.write("🪷 Roof/Skylight & Thermal Blocks")
+    st.write("Roof/Skylight & Thermal Blocks")
     st.write(df2)
 
     st.markdown("""<h6 style="color:red;">🔴 Fenestration</h6>""", unsafe_allow_html=True)

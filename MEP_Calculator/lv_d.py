@@ -326,12 +326,12 @@ def generateFenestration(baseline, proposed):
 
     df2 = pd.DataFrame(data2, columns=columns2)
     st.markdown("""<h6 style="color:red;">🔴 Shading</h6>""", unsafe_allow_html=True)
-    st.write("🪷 Above-grade Wall and Glazing")
+    st.write(" Above-grade Wall and Glazing")
     st.write(df1)
     if df1['Proposed']['Vertical Glazing Area (%)'][4] < 40.0 or df1['Baseline']['Vertical Glazing Area (%)'][4] < 40:
         st.info("ℹ️ The vertical glazing percentage is below 40%, supporting good thermal performance.")
 
-    st.write("🪷 Roof/Skylight & Thermal Blocks")
+    st.write("Roof/Skylight & Thermal Blocks")
     st.write(df2)
 
     # st.markdown("""<h6 style="color:red;">🔴 Fenestration</h6>""", unsafe_allow_html=True)
