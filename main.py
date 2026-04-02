@@ -510,8 +510,7 @@ def main():
             qa.getTwoSimFiles(uploaded_p_file, uploaded_b_file)
         st.markdown("""<h6 style="color:red;">Last Update</h6>
         <p style="font-size:14px; color:#888; font-style:italic; margin-top:-6px; margin-bottom:10px;">
-        - <b>18th Dec, 2025: </b>Fixed repetitive outputs & incorrect end-uses (calculation order + encoding issue)<br>
-        - <b>19th Dec, 2025: </b>Unified graph legends for multi-chart views.</p>""", unsafe_allow_html=True)
+        - <b>2nd April, 2026: </b>SPACE EQUIP changed to SPACE HEATING.</p>""", unsafe_allow_html=True)
     
     elif st.session_state.script_choice == "SIM to PDF":
         st.markdown("""<h5 style="color:red;">📝 SIM to PDF Converter</h5>
