@@ -881,102 +881,69 @@ def get_LVD_Summary_report(name):
         return pd.DataFrame(columns=columns)
 
 def getProcessLoads(database, proposed, baseline, sim90, sim180, sim270):
-    # st.write(database)
-    # st.write(proposed)
-    # try:
-    # --- Load SIM file temporarily ---
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
-        temp_file.write(proposed.read())
-        temp_file_path_proposed = temp_file.name
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
-        temp_file.write(baseline.read())
-        temp_file_path_baseline = temp_file.name
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
-        temp_file.write(sim90.read())
-        temp_file_path_sim90 = temp_file.name
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
-        temp_file.write(sim180.read())
-        temp_file_path_sim180 = temp_file.name
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
-        temp_file.write(sim270.read())
-        temp_file_path_sim270 = temp_file.name
+    import tempfile
+    import pandas as pd
+    import streamlit as st
 
-    # DATA FOR SPACE → data_for_space.csv
-    # LOCATION OF ORIGIN → location_origin.csv
-    # PEOPLE → people.csv
-    # LIGHTING → lighting.csv
-    # INTERIOR SURFACES → interior_surfaces.csv
-    # UNDERGROUND SURFACES → underground_surfaces.csv
+    # =====================================================
+    # SAVE TEMP FILES
+    # =====================================================
+    def save_temp(uploaded_file):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
+            temp_file.write(uploaded_file.read())
+            return temp_file.name
 
-    # Extract baseline load data
+    temp_file_path_proposed = save_temp(proposed)
+    temp_file_path_baseline = save_temp(baseline)
+    temp_file_path_sim90 = save_temp(sim90)
+    temp_file_path_sim180 = save_temp(sim180)
+    temp_file_path_sim270 = save_temp(sim270)
+
+    # =====================================================
+    # EXTRACT REPORTS
+    # =====================================================
     lvc_exterior = get_LVC_Exterior_Surfaces(temp_file_path_baseline)
     pv_a_pumps = get_PVA_Pumps(temp_file_path_baseline)
     pv_a_pumps_p = get_PVA_Pumps(temp_file_path_proposed)
     pv_a_tower = get_PVA_Tower(temp_file_path_baseline)
     pv_a_tower_p = get_PVA_Tower(temp_file_path_proposed)
-    # st.write(pv_a_tower)
 
     lv_d_proposed = get_LVB_Report(temp_file_path_proposed)
     lv_d_baseline = get_LVB_Report(temp_file_path_baseline)
     lvd_base = get_LVD_report(temp_file_path_baseline)
-    # st.write(lvd_base)
-    df_new = lvc_exterior.merge(lvd_base, left_on="Surface", right_on="SURFACE", how="left") \
-            .drop(columns=["SURFACE"])
-    df_new = df_new.drop(columns=['RUNNAME', 'U-VALUE_Wall(BTU/HR-SQFT-F)', 'U-VALUE_Wall_Wind(BTU/HR-SQFT-F)', 'AREA_Wall_Wind(SQFT)'])
-    df_new = df_new.rename(columns={
-        'SPACE': 'Space Name',
-        'Area(ft²)': 'Area (Wall + Window) (ft²)',
-        'U-Value((BTU/HR-SQFT-F)': 'U-Value-Wall(BTU/hr·ft²·°F)',
-        'U-VALUE_Window(BTU/HR-SQFT-F)': 'U-Value-Window(BTU/hr·ft²·°F)',
-        'AREA_Window(SQFT)' : 'Area (Window) (ft²)',
-        'AREA_Wall(SQFT)' : 'Area (Wall) (ft²)',
-        'AZIMUTH' : 'Azimuth'
-    })
-    
-    # st.write(df_new)
-    # st.write(pv_a_pumps)
-    
+
     sv_a_baseline = get_SVA_Report(temp_file_path_baseline)
     sv_a_proposed = get_SVA_Report(temp_file_path_proposed)
     sv_a_zone_df = get_SVA_Zone_Report(temp_file_path_baseline)
+
     pv_a_loop = get_PVA_loop_Report(temp_file_path_baseline)
     pv_a_loop_p = get_PVA_loop_Report(temp_file_path_proposed)
+
     pv_a_primary = get_PVA_Primary_Report(temp_file_path_baseline)
     pv_a_primary_p = get_PVA_Primary_Report(temp_file_path_proposed)
+
     ps_e_baseline = get_PSE_report(temp_file_path_baseline)
     ps_e_proposed = get_PSE_report(temp_file_path_proposed)
     pse_90 = get_PSE_report(temp_file_path_sim90)
     pse_180 = get_PSE_report(temp_file_path_sim180)
     pse_270 = get_PSE_report(temp_file_path_sim270)
+
     lvd_summary_p = get_LVD_Summary_report(temp_file_path_proposed)
     lvd_summary_b = get_LVD_Summary_report(temp_file_path_baseline)
+
     lv_g_baseline = get_LVG_Report(temp_file_path_baseline)
     lv_g_proposed = get_LVG_Report(temp_file_path_proposed)
-    # st.write("lv_d_baseline")
-    # st.write(lv_d_baseline)
-    # st.write("lv_d_p")
-    # st.write(lv_d_proposed)
-    # st.write("sv_a_baseline")
-    # st.write(sv_a_baseline)
-    # st.write("sv_a_proposed")
-    # st.write(sv_a_proposed)
-    # st.write("sv_a_zone_df")
-    # st.write(sv_a_zone_df)
-    # st.write("pv_a_loop")
-    # st.write(pv_a_loop)
-    # st.write("primary")
-    # st.write(pv_a_primary)
-    # st.write("pse")
-    # st.write(ps_e_baseline)
-    # st.write("lvd_summary")
-    # st.write(lvd_summary_p)
-    # st.write("lvd_summary")
-    # st.write(lvd_summary_b)
-    # Keep necessary columns only
-    lv_d_baseline = lv_d_baseline[['SPACE', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)']]
-    lv_d_proposed = lv_d_proposed[['SPACE', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)']]
 
-    ############################ STEP 1 ############################
+    # =====================================================
+    # CLEAN REQUIRED COLUMNS
+    # =====================================================
+    keep_cols = ['SPACE', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)']
+    lv_d_baseline = lv_d_baseline[keep_cols].copy()
+    lv_d_proposed = lv_d_proposed[keep_cols].copy()
+
+    # =====================================================
+    # IDENTICAL CHECK
+    # =====================================================
     merged_df = lv_d_baseline.merge(
         lv_d_proposed,
         on='SPACE',
@@ -984,7 +951,6 @@ def getProcessLoads(database, proposed, baseline, sim90, sim180, sim270):
         how='outer'
     )
 
-    # 3. Check matching
     merged_df['Mark'] = merged_df.apply(
         lambda row: "Yes" if (
             row['AREA(SQFT)_baseline'] == row['AREA(SQFT)_proposed'] and
@@ -993,236 +959,188 @@ def getProcessLoads(database, proposed, baseline, sim90, sim180, sim270):
         axis=1
     )
 
-    # Create Code 3
-    database['Code 3'] = database['Code'].astype(str).str[:2].str.capitalize() + \
-                            database['Space type'].astype(str).str[:2].str.capitalize()
+    baseline_identical = (merged_df['Mark'] == 'Yes').all()
 
-    lv_b_baseline = lv_d_baseline.dropna(subset=['SPACE'])
-    filtered_data = database[['Building_Type', 'Code 3']].dropna()
+    # =====================================================
+    # MASTER SPACE MAP
+    # =====================================================
+    space_to_btype = {
+        "Mechan": "Electrical/mechanical",
+        "Corrid": "Corridor/transition",
+        "Archiv": "Storage",
+        "Multip": "Conference/meeting/multipurpose",
+        "Restro": "Restrooms",
+        "Stairw": "Stairway",
+        "Elevat": "Lobby - elevator",
+        "Sales-": "Sales area",
+        "Enclos": "Office - enclosed",
+        "Break/": "Lounge/recreation",
+        "Locker": "Locker room",
+        "Lounge": "Lounge/recreation",
+        "Dining": "Dining area",
+        "Food": "Food preparation",
+        "Lobby": "Lobby",
+        "Workshop": "Workshop",
+        "Family": "Dining area family dining",
+        "Kitche": "Dining area family dining",
+        "Readin": "Reading Area"
+    }
 
-    summary_rows = []
-    for btype in filtered_data['Building_Type'].unique():
-        btype_filtered = filtered_data[filtered_data['Building_Type'] == btype]
-        matched_rows = []
+    def map_space(space):
+        try:
+            room_code = str(space).split("_")[1]
+            return space_to_btype.get(room_code)
+        except:
+            return None
 
-        for _, row in lv_b_baseline.iterrows():
-            space_val = str(row['SPACE'])
-            for _, code_row in btype_filtered.iterrows():
-                code_3 = str(code_row['Code 3'])
-                if code_3 in space_val:
-                    matched_rows.append({
-                        'AREA(SQFT)': row['AREA(SQFT)'],
-                        'EQUIP(WATT / SOFT)': row['EQUIP(WATT / SOFT)'],
-                        'LIGHTS(WATT / SOFT)': row['LIGHTS(WATT / SOFT)']
-                    })
-                    break
+    # =====================================================
+    # AUTO MATCH PROPOSED
+    # =====================================================
+    final_df = lv_d_proposed.copy()
+    final_df["Building Type"] = final_df["SPACE"].apply(map_space)
 
-        if matched_rows:
-            matched_df = pd.DataFrame(matched_rows)
-            total_area = matched_df['AREA(SQFT)'].sum()
-            weighted_equip = (matched_df['AREA(SQFT)'] * matched_df['EQUIP(WATT / SOFT)']).sum() / total_area
-            weighted_light = (matched_df['AREA(SQFT)'] * matched_df['LIGHTS(WATT / SOFT)']).sum() / total_area
-            summary_rows.append({
-                'Building Type': btype,
-                'AREA(SQFT)': total_area,
-            })
+    matched_df = final_df.dropna(subset=["Building Type"]).copy()
+    unmatched_df = final_df[final_df["Building Type"].isna()].copy()
 
-    if (merged_df['Mark'] == 'Yes').all():
-        if summary_rows:
-            summary_df = pd.DataFrame(summary_rows)
+    # =====================================================
+    # SESSION STATE
+    # =====================================================
+    if "mapped_spaces" not in st.session_state:
+        st.session_state.mapped_spaces = set()
 
-            # Add TOTAL row
-            grand_total_area = summary_df['AREA(SQFT)'].sum()
-            total_row = pd.DataFrame([{
-                'Building Type': 'TOTAL',
-                'AREA(SQFT)': grand_total_area,
-            }])
-            summary_df = pd.concat([summary_df, total_row], ignore_index=True)
-        else:
-            st.warning("No matches found for any building type.")
-
-        #############################################################
-        # --- Prepare matched and unmatched spaces ---
-        database['Code 3'] = (
-            database['Code'].astype(str).str[:2].str.capitalize() +
-            database['Space type'].astype(str).str[:2].str.capitalize()
+    if "mapped_df" not in st.session_state:
+        st.session_state.mapped_df = pd.DataFrame(
+            columns=["SPACE", "AREA(SQFT)", "EQUIP(WATT / SOFT)", "LIGHTS(WATT / SOFT)", "Building Type"]
         )
 
-        lv_b_proposed = lv_d_proposed.dropna(subset=['SPACE'])
-        filtered_data = database[['Building_Type', 'Code 3']].dropna()
+    # =====================================================
+    # MANUAL UI
+    # =====================================================
+    st.markdown("###### ⚠️ Map Unmatched Spaces")
 
-        matched_spaces, unmatched_spaces = [], []
-        for _, row in lv_b_proposed.iterrows():
-            space_val = str(row['SPACE'])
-            matched_type = None
-            for _, code_row in filtered_data.iterrows():
-                if str(code_row['Code 3']) in space_val:
-                    matched_type = code_row['Building_Type']
-                    break
-            if matched_type:
-                matched_spaces.append({
-                    'SPACE': space_val,
-                    'Building Type': matched_type,
-                    'AREA(SQFT)': row['AREA(SQFT)'],
-                    'EQUIP(WATT / SOFT)': row['EQUIP(WATT / SOFT)'],
-                    'LIGHTS(WATT / SOFT)': row['LIGHTS(WATT / SOFT)']
-                })
-            else:
-                unmatched_spaces.append({
-                    'SPACE': space_val,
-                    'AREA(SQFT)': row['AREA(SQFT)'],
-                    'EQUIP(WATT / SOFT)': row['EQUIP(WATT / SOFT)'],
-                    'LIGHTS(WATT / SOFT)': row['LIGHTS(WATT / SOFT)']
-                })
-
-        matched_df = pd.DataFrame(matched_spaces) if matched_spaces else pd.DataFrame(
-            columns=['SPACE', 'Building Type', 'AREA(SQFT)', 'EQUIP(WATT / SOFT)', 'LIGHTS(WATT / SOFT)'])
-
-        st.markdown("###### ⚠️ Map Unmatched Spaces")
-        # if unmatched_spaces:
+    if not unmatched_df.empty:
         with st.form("mapping_form"):
             col1, col2 = st.columns([2.8, 1.2])
-            with col1:
-                unmatched_df = pd.DataFrame(unmatched_spaces).reset_index(drop=True)
 
-                if "mapped_spaces" not in st.session_state:
-                    st.session_state.mapped_spaces = set()
-                if "mapped_df" not in st.session_state:
-                    st.session_state.mapped_df = pd.DataFrame(
-                        columns=["SPACE", "AREA(SQFT)", "EQUIP(WATT / SOFT)", "LIGHTS(WATT / SOFT)", "Building Type"]
-                    )
-                    
+            with col1:
                 selected_spaces = []
                 cols = st.columns(4)
+
                 for i, row in unmatched_df.iterrows():
                     col = cols[i % 4]
-                    is_disabled = row['SPACE'] in st.session_state.mapped_spaces
-                    # 
-                    checked = col.checkbox(
-                        f"{row['SPACE']}",
-                        key=f"check_{i}",
-                        disabled=is_disabled
-                    )
-                    if checked and not is_disabled:
-                        selected_spaces.append(row['SPACE'])
+                    disabled = row["SPACE"] in st.session_state.mapped_spaces
 
-                building_types_list = database['Building_Type'].dropna().unique()
+                    checked = col.checkbox(
+                        row["SPACE"],
+                        key=f"space_{i}",
+                        disabled=disabled
+                    )
+
+                    if checked and not disabled:
+                        selected_spaces.append(row["SPACE"])
 
             with col2:
                 selected_btype = st.selectbox(
                     "Building Type",
-                    options=sorted(building_types_list, key=str.lower),
-                    label_visibility="collapsed"
+                    sorted(database["Building_Type"].dropna().unique())
                 )
-                submit = st.form_submit_button("✅ Map Selected")
-                if submit:
+
+                submitted = st.form_submit_button("✅ Map Selected")
+
+                if submitted:
                     for space in selected_spaces:
-                        st.session_state.mapped_spaces.add(space)
-                        row_data = unmatched_df[unmatched_df['SPACE'] == space].copy()
+                        row_data = unmatched_df[unmatched_df["SPACE"] == space].copy()
                         row_data["Building Type"] = selected_btype
+
+                        st.session_state.mapped_spaces.add(space)
                         st.session_state.mapped_df = pd.concat(
-                            [st.session_state.mapped_df, row_data], ignore_index=True
+                            [st.session_state.mapped_df, row_data],
+                            ignore_index=True
                         )
-                    st.success(f"Mapped {len(selected_spaces)} spaces to '{selected_btype}'")
 
-                    # for space in selected_spaces:
-                    #     st.session_state.mapped_spaces.add(space)
-                    #     row_data = unmatched_df[unmatched_df['SPACE'] == space].copy()
-                    #     row_data["Building Type"] = selected_btype
-                    #     st.session_state.mapped_df = pd.concat(
-                    #         [st.session_state.mapped_df, row_data], ignore_index=True
-                    #     )
-                    # st.success(f"Mapped {len(selected_spaces)} spaces to '{selected_btype}'")
+                    st.success(f"{len(selected_spaces)} spaces mapped")
 
-    # --- Build final_df always (even if no new mapping) ---
-    if not st.session_state.mapped_df.empty:
-        final_df = pd.concat([matched_df, st.session_state.mapped_df], ignore_index=True)
-    else:
-        final_df = matched_df.copy()
+    # =====================================================
+    # FINAL MERGE
+    # =====================================================
+    final_df = pd.concat(
+        [matched_df, st.session_state.mapped_df],
+        ignore_index=True
+    ).drop_duplicates(subset=["SPACE"])
 
-    # --- Build summary_df ---
+    # =====================================================
+    # SUMMARY
+    # =====================================================
     summary_rows = []
-    mark = 'Yes'
-    for btype in final_df['Building Type'].unique():
-        temp_df = final_df[final_df['Building Type'] == btype]
-        area = temp_df['AREA(SQFT)'].sum()
-        weighted_equip = (temp_df['AREA(SQFT)'] * temp_df['EQUIP(WATT / SOFT)']).sum() / area
-        weighted_light = (temp_df['AREA(SQFT)'] * temp_df['LIGHTS(WATT / SOFT)']).sum() / area
 
-        baseline_spaces = lv_d_baseline[lv_d_baseline['SPACE'].isin(temp_df['SPACE'])]
+    for btype in final_df["Building Type"].dropna().unique():
+        temp_df = final_df[final_df["Building Type"] == btype]
+
+        area = temp_df["AREA(SQFT)"].sum()
+
+        equip = (
+            temp_df["AREA(SQFT)"] * temp_df["EQUIP(WATT / SOFT)"]
+        ).sum() / area
+
+        light = (
+            temp_df["AREA(SQFT)"] * temp_df["LIGHTS(WATT / SOFT)"]
+        ).sum() / area
+
+        baseline_spaces = lv_d_baseline[
+            lv_d_baseline["SPACE"].isin(temp_df["SPACE"])
+        ]
+
+        baseline_light = None
         if not baseline_spaces.empty:
             baseline_light = (
-                (baseline_spaces['AREA(SQFT)'] * baseline_spaces['LIGHTS(WATT / SOFT)']).sum()
-                / baseline_spaces['AREA(SQFT)'].sum()
-            )
-        else:
-            baseline_light = None
+                baseline_spaces["AREA(SQFT)"] *
+                baseline_spaces["LIGHTS(WATT / SOFT)"]
+            ).sum() / baseline_spaces["AREA(SQFT)"].sum()
 
         summary_rows.append({
-            'Building Type': btype,
-            'AREA(SQFT)': area,
-            'EQUIP(WATT / SOFT)': round(weighted_equip, 2),
-            'LIGHTS(WATT / SOFT)': round(weighted_light, 2),
-            'LIGHTS(WATT / SOFT) (Baseline)': round(baseline_light, 2) if baseline_light is not None else None,
-            'Baseline Modeled Identically': mark
+            "Building Type": btype,
+            "AREA(SQFT)": area,
+            "EQUIP(WATT / SOFT)": round(equip, 2),
+            "LIGHTS(WATT / SOFT)": round(light, 2),
+            "LIGHTS(WATT / SOFT) (Baseline)": round(baseline_light, 2) if baseline_light else None,
+            "Baseline Modeled Identically": "Yes" if baseline_identical else "No"
         })
 
     summary_df = pd.DataFrame(summary_rows)
-    total_area = summary_df['AREA(SQFT)'].sum()
-    total_equip = (summary_df['AREA(SQFT)'] * summary_df['EQUIP(WATT / SOFT)']).sum() / total_area
-    total_light = (summary_df['AREA(SQFT)'] * summary_df['LIGHTS(WATT / SOFT)']).sum() / total_area
-    total_light_baseline = (summary_df['AREA(SQFT)'] * summary_df['LIGHTS(WATT / SOFT) (Baseline)']).sum() / total_area
-    total_row = pd.DataFrame([{
-        'Building Type': 'TOTAL',
-        'AREA(SQFT)': total_area,
-        'EQUIP(WATT / SOFT)': round(total_equip, 2),
-        'LIGHTS(WATT / SOFT)': round(total_light, 2),
-        'LIGHTS(WATT / SOFT) (Baseline)': round(total_light_baseline, 2)
-    }])
-    summary_df = pd.concat([summary_df, total_row], ignore_index=True)
 
-    # --- Display table with delete buttons ---
-    st.markdown("###### 📝 Mapped Spaces: Review & Edit")
+    # TOTAL ROW
+    if not summary_df.empty:
+        total_area = summary_df["AREA(SQFT)"].sum()
 
-    table_data = summary_df.to_dict('records')
+        total_row = pd.DataFrame([{
+            "Building Type": "TOTAL",
+            "AREA(SQFT)": total_area,
+            "EQUIP(WATT / SOFT)": round(
+                (summary_df["AREA(SQFT)"] * summary_df["EQUIP(WATT / SOFT)"]).sum() / total_area, 2
+            ),
+            "LIGHTS(WATT / SOFT)": round(
+                (summary_df["AREA(SQFT)"] * summary_df["LIGHTS(WATT / SOFT)"]).sum() / total_area, 2
+            )
+        }])
 
-    # Table Header
-    header_cols = st.columns([1, 0.5, 0.5, 0.5])
-    for col, header in zip(header_cols, ["Building Type", "AREA (SQFT)", "EQUIP (WATT / SQFT)", "Action"]):
-        col.markdown(f"**{header}**")
+        summary_df = pd.concat([summary_df, total_row], ignore_index=True)
 
-    # Table Rows
-    for i, row in enumerate(table_data):
-        row_cols = st.columns([1, 0.5, 0.5, 0.5])
-        row_cols[0].write(row['Building Type'])
-        row_cols[1].write(f"{row['AREA(SQFT)']:.2f}")
-        row_cols[2].write(f"{row['EQUIP(WATT / SOFT)']:.2f}")
+    # =====================================================
+    # DISPLAY
+    # =====================================================
+    st.markdown("###### 📝 Process Load Summary")
+    st.dataframe(summary_df)
 
-        if row['Building Type'] != "TOTAL":
-            # ✅ Only allow delete if this building type exists in mapped_df
-            if row['Building Type'] in st.session_state.mapped_df['Building Type'].tolist():
-                if row_cols[3].button("🗑️ Delete", key=f"del_{i}"):
-                    st.session_state.mapped_df = st.session_state.mapped_df[
-                        st.session_state.mapped_df['Building Type'] != row['Building Type']
-                    ]
-                    removed_spaces = final_df[final_df['Building Type'] == row['Building Type']]['SPACE'].tolist()
-                    for space in removed_spaces:
-                        st.session_state.mapped_spaces.discard(space)
-                    st.rerun()
-            else:
-                # 🔒 Show info instead of blank (for auto-matched)
-                row_cols[3].markdown("🔒 Auto-matched", unsafe_allow_html=True)
-        else:
-            row_cols[3].write("")
+    with st.expander("✅ See List of Matched Spaces"):
+        st.dataframe(final_df)
 
-    # --- Show matched spaces detail ---
-    with st.expander("✅ See List of Matched Spaces"):   # CHANGE title
-        if not final_df.empty:
-            st.markdown("##### 📋 Current Matched Spaces (Auto + Manual)")
-            st.dataframe(final_df)
-        else:
-            st.info("No matched spaces found yet.")
-    # st.write(lv_b_baseline)
-    return summary_df, sv_a_baseline, sv_a_zone_df, sv_a_proposed, pv_a_loop, pv_a_primary, ps_e_baseline, lvd_summary_p, lvd_summary_b, lv_g_baseline, lv_g_proposed, ps_e_proposed, pse_90, pse_180, pse_270, lvd_base, pv_a_pumps, pv_a_loop_p, pv_a_pumps_p, pv_a_primary_p, pv_a_tower, pv_a_tower_p
-    # else:
-    #     st.error("Baseline didn't Modeled Identically")
+    return (
+        summary_df, sv_a_baseline, sv_a_zone_df, sv_a_proposed,
+        pv_a_loop, pv_a_primary, ps_e_baseline,
+        lvd_summary_p, lvd_summary_b,
+        lv_g_baseline, lv_g_proposed,
+        ps_e_proposed, pse_90, pse_180, pse_270,
+        lvd_base, pv_a_pumps, pv_a_loop_p,
+        pv_a_pumps_p, pv_a_primary_p,
+        pv_a_tower, pv_a_tower_p
+    )

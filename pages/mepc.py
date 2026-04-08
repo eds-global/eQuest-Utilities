@@ -3,11 +3,7 @@ from MEP_Calculator import loads, ps_e, lv_d
 import pandas as pd
 import re
 
-st.set_page_config(
-    page_title="eQUEST Utilities",
-    page_icon="💡",
-    layout='wide',
-)
+st.set_page_config(page_title="eQUEST Utilities", page_icon="💡", layout='wide')
 
 # -------------------------
 # Fixed Title + Navigation
@@ -501,7 +497,22 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
             dfsss['Baseline 90° rotation'][51] = total_90_degree_mwh
             dfsss['Baseline 180° rotation'][51] = total_180_degree_mwh
             dfsss['Baseline 270° rotation'][51] = total_270_degree_mwh
-            st.write(dfsss)
+            # st.write(dfsss)
+            dfsss = dfsss.drop(columns=dfsss.columns[-2])
+            cols_to_color = dfsss.columns[4:].tolist()
+            # remove 2nd last column if it exists in this range
+            # if len(cols_to_color) >= 2:
+            #     cols_to_color.pop(-2)
+
+            styled_df = (
+                dfsss.style
+                .format("{:.2f}", subset=dfsss.select_dtypes(include='number').columns)
+                .set_properties(
+                    subset=cols_to_color,
+                    **{'background-color': '#E3F2FD'}
+                )
+            )
+            st.dataframe(styled_df, use_container_width=True)
 
         # with st.expander("**🔴 Baseline Energy Summary by End Use**"):
         #     dfsss = dfsss.head(-2)
@@ -723,12 +734,29 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
         df2 = pd.DataFrame(data2, columns=columns2)
         st.markdown("""<h6 style="color:red;">🔴 Shading</h6>""", unsafe_allow_html=True)
         st.write("Above-grade Wall and Glazing")
-        st.write(df1)
+        # st.write(df1)
+        styled_df = (
+            df1.style
+            .format("{:.2f}", subset=df1.select_dtypes(include='number').columns)
+            .set_properties(
+                subset=df1.columns[1:],
+                **{'background-color': '#E3F2FD'}
+            )
+        )
+        st.dataframe(styled_df, use_container_width=True)
         if df1['Proposed']['Vertical Glazing Area (%)'][4] < 40.0 or df1['Baseline']['Vertical Glazing Area (%)'][4] < 40:
             st.info("ℹ️ The vertical glazing percentage is below 40%, supporting good thermal performance.")
 
         st.write("Roof/Skylight & Thermal Blocks")
-        st.write(df2)
+        styled_df = (
+            df2.style
+            .format("{:.2f}", subset=df2.select_dtypes(include='number').columns)
+            .set_properties(
+                subset=df2.columns[0:],
+                **{'background-color': '#E3F2FD'}
+            )
+        )
+        st.dataframe(styled_df, use_container_width=True)
 
         # st.markdown("""<h6 style="color:red;">🔴 Fenestration</h6>""", unsafe_allow_html=True)
         columns = pd.MultiIndex.from_tuples([
@@ -870,10 +898,7 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
         # -------------------------
         st.markdown('<div id="lighting" class="section"></div>', unsafe_allow_html=True)
         st.markdown("""<br><br><br>""",unsafe_allow_html=True)
-        st.markdown(
-            '<h5 style="color:red;">Lighting Loads Summary</h5>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<h5 style="color:red;">Lighting Loads Summary</h5>', unsafe_allow_html=True)
 
         if summary_df is not None:
             summary_df.drop(columns=["EQUIP(WATT / SOFT)"], inplace=True, errors="ignore")
@@ -898,9 +923,26 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
                     ("Proposed", "Design LPD(W/ft²)"),
                     ("Proposed", "Modeled Design LPD(W/ft²)")
                 ])
-                st.dataframe(last4_grouped)
+                # st.dataframe(last4_grouped)
+                styled_df = (
+                    last4_grouped.style
+                    .format("{:.2f}", subset=last4_grouped.select_dtypes(include='number').columns)
+                    .set_properties(
+                        subset=last4_grouped.columns[1:],
+                        **{'background-color': '#E3F2FD'}
+                    )
+                )
+                st.dataframe(styled_df, use_container_width=True)
             elif "Design LPD(W/ft²)" not in summary_df.columns:
-                st.dataframe(summary_df)
+                styled_df = (
+                    summary_df.style
+                    .format("{:.2f}", subset=summary_df.select_dtypes(include='number').columns)
+                    .set_properties(
+                        subset=summary_df.columns[1:],
+                        **{'background-color': '#E3F2FD'}
+                    )
+                )
+                st.dataframe(styled_df, use_container_width=True)
         else:
             st.info("Moving to next")
 
@@ -929,10 +971,27 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
 
             summary_df = pd.concat([summary_df, pd.DataFrame([new_row])], ignore_index=True)
             summary_df = summary_df.rename(columns={"EQUIP(WATT / SOFT)": "Equipment Power Density(W/ft²)", "AREA(SQFT)": "Area(ft²)"})
-            st.dataframe(summary_df)
+            
+            styled_df = (
+                summary_df.style
+                .format("{:.2f}", subset=summary_df.select_dtypes(include='number').columns)
+                .set_properties(
+                    subset=summary_df.columns[1:],
+                    **{'background-color': '#E3F2FD'}
+                )
+            )
+            st.dataframe(styled_df, use_container_width=True)
         elif "EQUIP(WATT / SOFT)" not in summary_df.columns:
-            st.dataframe(summary_df)
-
+            styled_df = (
+                summary_df.style
+                .format("{:.2f}", subset=summary_df.select_dtypes(include='number').columns)
+                .set_properties(
+                    subset=summary_df.columns[1:],
+                    **{'background-color': '#E3F2FD'}
+                )
+            )
+            st.dataframe(styled_df, use_container_width=True)
+        
         # -------------------------
         # Section 7 - Air-Side HVAC
         # -------------------------
@@ -1304,10 +1363,14 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
             if pd.api.types.is_numeric_dtype(pd.to_numeric(col, errors='ignore'))
             else col
         )
+        styled_df = df_filtered.style.set_properties(
+            subset=df_filtered.columns[4:],
+            **{'background-color': '#E3F2FD;'}
+        )
         
         # Data editor
         edited_df = st.data_editor(
-            df_filtered,
+            styled_df,
             hide_index=True,
             use_container_width=True,
             key="editor_no_sum"  # Unique key prevents duplicate ID issue
@@ -1424,8 +1487,8 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
                 df.at[1, proposed_col] = ""
                 df.at[2, baseline_col] = f"{round((chillerCapacity*1_000_000) / 12000,1)}"
                 df.at[2, proposed_col] = f"{round((chillerCapacity_p*1_000_000) / 12000,1)}"
-                df.at[3, baseline_col] = chiller_full_load_cop
-                df.at[3, proposed_col] = chiller_full_load_cop_p
+                df.at[3, baseline_col] = f"{chiller_full_load_cop:.2f}"
+                df.at[3, proposed_col] = f"{chiller_full_load_cop_p:.2f}"
                 df.at[5, baseline_col] = "44"   # CW supply temp default
                 df.at[5, proposed_col] = "44"   # CW supply temp default
                 df.at[7, baseline_col] = "44°F (7°C) at outdoor temps 80°F (27°C) and above, 54°F (12°C) at outdoor temps 60°F (16°C) and below, and ramped linearly between 44°F (7°C) and 54°F (12°C) at outdoor temps between 80°F (27°C) and 60°F (16°C) per G3.1.3.9"
@@ -1474,13 +1537,13 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
                 col5_vals = col5_vals * (60 * 8.34)
                 ratio_vals = col4_vals / col5_vals
                 ratio_vals_p = col4_vals / col5_vals
-                final_ratio_value = round(ratio_vals_p.iloc[0], 2)
-                final_ratio_value_p = round(ratio_vals_p.iloc[0], 2)
+                final_ratio_value = ratio_vals_p.iloc[0]
+                final_ratio_value_p = ratio_vals_p.iloc[0]
 
                 # Store into every baseline column (Baseline - i)
                 for i in range(1, extra_cols + 1):
-                    df.at[6, f"Baseline - {i}"] = final_ratio_value
-                    df.at[6, f"Proposed"] = final_ratio_value_p
+                    df.at[6, f"Baseline - {i}"] = f"{final_ratio_value:.2f}"
+                    df.at[6, f"Proposed"] = f"{final_ratio_value_p:.2f}"
                     if len(df_primary) > 0:
                         df.at[8, f"Baseline - {i}"] = "Primary/Secondary as per G3.1.3.10"
                     else:
@@ -1532,7 +1595,7 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
             # -----------------------------
             # st.write(count_primary)
             # st.write(df)
-            rows_to_color = [1, 4, 5, 7, 8]
+            rows_to_color = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
             styled_df = df.style.apply(
                 lambda row: [
                     "background-color: #E3F2FD; color: black;"
@@ -1547,9 +1610,10 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
             # ----- Legend -----
             st.markdown(
                 """
-                <div style="margin-top:12px; padding:10px; border-left:4px solid red;">
-                    <b style="color:red;">🔵</b>  
-                    Cells highlighted in <span style="color:blue; font-weight:bold;">light blue</span> are to be filled or varified based on user.
+                <div style="margin-top:12px; padding:10px; border-left:4px solid #2196F3; background:#F5FBFF;">
+                    <b>🔵 Note:</b>  
+                    Cells highlighted in <span style="color:#1976D2; font-weight:bold;">light blue</span> 
+                    should be <b>verified and copied by the user</b>.
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -1614,8 +1678,8 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
                     proposed_col = f"Proposed"
                     df.at[0, baseline_col] = f"{len(pva_tower)}"
                     df.at[0, proposed_col] = f"{len(pva_tower)}"
-                    df.at[1, baseline_col] = round(gpm_per_hp,1)
-                    df.at[1, proposed_col] = round(gpm_per_hp_p,1)
+                    df.at[1, baseline_col] = f"{gpm_per_hp:.2f}"
+                    df.at[1, proposed_col] = f"{gpm_per_hp_p:.2f}"
                     df.at[2, baseline_col] = "Two-speed fan"
                     df.at[2, proposed_col] = ""
                     df.at[6, baseline_col] = f"{len(df_condenser)}"
@@ -1627,28 +1691,34 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
                     df.at[9, baseline_col] = df_condenser['Capacity Control'].iloc[0]
                     df.at[9, proposed_col] = df_condenser_p['Capacity Control'].iloc[0]
                 
-                rows_to_color = [3, 4, 5]
-                proposed_row = [2]
-                highlight_style = "background-color: #E3F2FD; color: black;"  # Soft blue
+                rows_to_color = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                proposed_row = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                highlight_style = "background-color: #E3F2FD; color: black;"
+
+                # Select all baseline columns automatically
+                baseline_cols = [col for col in df.columns if "Baseline" in col]
+                target_cols = baseline_cols + ["Proposed"]
+
                 df = df.style.apply(
                     lambda row: [
                         highlight_style
-                        if (row.name in rows_to_color and col in [baseline_col, proposed_col])
-                        or (row.name in proposed_row and col in [proposed_col])
+                        if (
+                            (row.name in rows_to_color and col in target_cols)
+                            or (row.name in proposed_row and col == "Proposed")
+                        )
                         else ""
                         for col in row.index
                     ],
                     axis=1
                 )
 
-                
                 st.write(df)
-                # ----- Legend -----
                 st.markdown(
                     """
-                    <div style="margin-top:12px; padding:10px; border-left:4px solid red;">
-                        <b style="color:red;">🔵</b>  
-                        Cells highlighted in <span style="color:blue; font-weight:bold;">light blue</span> are to be filled or varified based on user.
+                    <div style="margin-top:12px; padding:10px; border-left:4px solid #2196F3; background:#F5FBFF;">
+                        <b>🔵 Note:</b>  
+                        Cells highlighted in <span style="color:#1976D2; font-weight:bold;">light blue</span> 
+                        should be <b>verified and copied by the user</b>.
                     </div>
                     """,
                     unsafe_allow_html=True

@@ -65,29 +65,41 @@ def main(uploaded_file):
                 mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
 
-##################################################################################################
-############################################ PDF Export ##########################################
-##################################################################################################
+#####################################################################################################
+############################################ PDF Export #############################################
+#####################################################################################################
 
 def extract_values(text_block):
-    room_match = re.search(r'^([A-Z0-9-]+-[^\n]+)', text_block)
-    floor_area = re.search(r'Floor Area\s+\.{2,}\s+([\d.]+)', text_block)
-    ceiling_height = re.search(r'Ceiling Height\s+\.{2,}\s+([\d.]+)', text_block)
-    building_weight = re.search(r'Building Weight\s+\.{2,}\s+([\d.]+)', text_block)
-    oa_req1 = re.search(r'OA Requirement 1\s+\.{2,}\s+([\d.]+)', text_block)
-    oa_req2 = re.search(r'OA Requirement 2\s+\.{2,}\s+([\d.]+)', text_block)
-    occupancy = re.search(r'Occupancy\s+\.{2,}\s+([\d.]+)', text_block)
-    sensible = re.search(r'Sensible\s+\.{2,}\s+([\d.]+)', text_block)
-    latent = re.search(r'Latent\s+\.{2,}\s+([\d.]+)', text_block)
+    room_match = re.search(r'^([A-Z0-9-]+-[^\n]+)', text_block, re.MULTILINE)
 
-    lighting = re.search(r'Overhead Lighting:.*?Wattage\s+\.{2,}\s+([\d.]+)', text_block, re.DOTALL)
-    lighting_unit = re.search(r'Overhead Lighting:.*?Wattage\s+\.{2,}\s+[\d.]+\s*([^\s]+)', text_block, re.DOTALL)
+    floor_area = re.search(r'Floor Area\s+([\d.]+)', text_block)
+    ceiling_height = re.search(r'Avg\.\s*Ceiling Height\s+([\d.]+)', text_block)
+    building_weight = re.search(r'Building Weight\s+([\d.]+)', text_block)
 
-    task_lighting = re.search(r'Task Lighting:.*?Wattage\s+\.{2,}\s+([\d.]+)', text_block, re.DOTALL)
-    task_lighting_unit = re.search(r'Task Lighting:.*?Wattage\s+\.{2,}\s+[\d.]+\s*([^\s]+)', text_block, re.DOTALL)
+    oa_req1 = re.search(r'OA Requirement 1\s+([\d.]+)', text_block)
+    oa_req2 = re.search(r'OA Requirement 2\s+([\d.]+)', text_block)
 
-    electrical = re.search(r'Electrical Equipment:.*?Wattage\s+\.{2,}\s+([\d.]+)', text_block, re.DOTALL)
-    electrical_unit = re.search(r'Electrical Equipment:.*?Wattage\s+\.{2,}\s+[\d.]+\s*([^\s]+)', text_block, re.DOTALL)
+    occupancy = re.search(r'Occupancy\s+([\d.]+)', text_block)
+    sensible = re.search(r'Sensible\s+([\d.]+)', text_block)
+    latent = re.search(r'Latent\s+([\d.]+)', text_block)
+
+    lighting = re.search(
+        r'2\.1\.\s*Overhead Lighting:.*?Wattage\s+([\d.]+)',
+        text_block,
+        re.DOTALL
+    )
+
+    task_lighting = re.search(
+        r'2\.2\.\s*Task Lighting:.*?Wattage\s+([\d.]+)',
+        text_block,
+        re.DOTALL
+    )
+
+    electrical = re.search(
+        r'2\.3\.\s*Electrical Equipment:.*?Wattage\s+([\d.]+)',
+        text_block,
+        re.DOTALL
+    )
 
     return [
         room_match.group(1).strip() if room_match else "",
@@ -100,9 +112,9 @@ def extract_values(text_block):
         float(sensible.group(1)) if sensible else None,
         float(latent.group(1)) if latent else None,
         float(lighting.group(1)) if lighting else None,
-        lighting_unit.group(1) if lighting_unit else "",
+        "W/m²" if lighting else "",
         float(task_lighting.group(1)) if task_lighting else None,
-        task_lighting_unit.group(1) if task_lighting_unit else "",
+        "W/m²" if task_lighting else "",
         float(electrical.group(1)) if electrical else None,
-        electrical_unit.group(1) if electrical_unit else ""
+        "W/m²" if electrical else ""
     ]
