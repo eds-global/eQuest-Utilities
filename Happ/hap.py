@@ -72,31 +72,31 @@ def main(uploaded_file):
 def extract_values(text_block):
     room_match = re.search(r'^([A-Z0-9-]+-[^\n]+)', text_block, re.MULTILINE)
 
-    floor_area = re.search(r'Floor Area\s+([\d.]+)', text_block)
-    ceiling_height = re.search(r'Avg\.\s*Ceiling Height\s+([\d.]+)', text_block)
-    building_weight = re.search(r'Building Weight\s+([\d.]+)', text_block)
+    floor_area = re.search(r'Floor Area.*?(\d+\.\d+)', text_block, re.DOTALL)
+    ceiling_height = re.search(r'Avg\.\s*Ceiling Height.*?(\d+\.\d+)', text_block, re.DOTALL)
+    building_weight = re.search(r'Building Weight.*?(\d+\.\d+)', text_block, re.DOTALL)
 
-    oa_req1 = re.search(r'OA Requirement 1\s+([\d.]+)', text_block)
-    oa_req2 = re.search(r'OA Requirement 2\s+([\d.]+)', text_block)
+    oa_req1 = re.search(r'OA Requirement 1.*?(\d+\.\d+)', text_block, re.DOTALL)
+    oa_req2 = re.search(r'OA Requirement 2.*?(\d+\.\d+)', text_block, re.DOTALL)
 
-    occupancy = re.search(r'Occupancy\s+([\d.]+)', text_block)
-    sensible = re.search(r'Sensible\s+([\d.]+)', text_block)
-    latent = re.search(r'Latent\s+([\d.]+)', text_block)
+    occupancy = re.search(r'Occupancy.*?(\d+\.\d+)', text_block, re.DOTALL)
+    sensible = re.search(r'Sensible.*?(\d+\.\d+)', text_block, re.DOTALL)
+    latent = re.search(r'Latent.*?(\d+\.\d+)', text_block, re.DOTALL)
 
     lighting = re.search(
-        r'2\.1\.\s*Overhead Lighting:.*?Wattage\s+([\d.]+)',
+        r'2\.1\.\s*Overhead Lighting:.*?Wattage.*?(\d+\.\d+)',
         text_block,
         re.DOTALL
     )
 
     task_lighting = re.search(
-        r'2\.2\.\s*Task Lighting:.*?Wattage\s+([\d.]+)',
+        r'2\.2\.\s*Task Lighting:.*?Wattage.*?(\d+\.\d+)',
         text_block,
         re.DOTALL
     )
 
     electrical = re.search(
-        r'2\.3\.\s*Electrical Equipment:.*?Wattage\s+([\d.]+)',
+        r'2\.3\.\s*Electrical Equipment:.*?Wattage.*?(\d+\.\d+)',
         text_block,
         re.DOTALL
     )
