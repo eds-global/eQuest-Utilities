@@ -153,7 +153,7 @@ if uploaded_0_degree is not None and uploaded_proposed_file is not None:
     csv_file = r'MEP_Calculator/tables/MEP Calculator.csv'
     dfsss = pd.read_csv(csv_file)
     db = pd.read_csv(databse)
-    summary_df, sv_a_df, sv_a_zone_df, sv_a_df_p, pva_df, pva_primary, ps_e_df_b, lv_d_summ_p, lv_d_summ_b, lv_g_baseline, lv_g_proposed, ps_e_proposed, pse_90, pse_180, pse_270, lvd_base, pva_pumps, pva_loop_p, pva_pumps_p, pva_primary_p, pva_tower, pva_tower_p = loads.getProcessLoads(db, sim_file_proposed_for_use1, sim_file_for_use1, sim_file_for_use90, sim_file_for_use180, sim_file_for_use270)
+    summary_df, sv_a_df, sv_a_zone_df, sv_a_df_p, pva_df, pva_primary, ps_e_df_b, lv_d_summ_p, lv_d_summ_b, lv_g_baseline, lv_g_proposed, ps_e_proposed, pse_90, pse_180, pse_270, lvd_base, pva_pumps, pva_loop_p, pva_pumps_p, pva_primary_p, pva_tower, pva_tower_p = loads.getProcessLoads(db, sim_file_for_use1, sim_file_for_use1, sim_file_for_use90, sim_file_for_use180, sim_file_for_use270)
     st.markdown('<div id="opaque" class="section"></div>', unsafe_allow_html=True)
     st.markdown("""<br><br><br>""",unsafe_allow_html=True)
     st.markdown('<h5 style="color:red;">Opaque Assemblies</h5>',unsafe_allow_html=True)

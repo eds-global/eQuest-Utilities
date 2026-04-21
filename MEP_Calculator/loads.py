@@ -889,8 +889,11 @@ def getProcessLoads(database, proposed, baseline, sim90, sim180, sim270):
     # SAVE TEMP FILES
     # =====================================================
     def save_temp(uploaded_file):
+        uploaded_file.seek(0)
+        content = uploaded_file.read()
+
         with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
-            temp_file.write(uploaded_file.read())
+            temp_file.write(content)
             return temp_file.name
 
     temp_file_path_proposed = save_temp(proposed)
