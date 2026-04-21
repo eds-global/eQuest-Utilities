@@ -263,10 +263,8 @@ def main():
         """, unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Upload Schedule in excel", type=["xlsx"], accept_multiple_files=False)
         if uploaded_file is not None:
-            if st.button("Generate INP"):
-                schedule_v01.get_schedule(uploaded_file)
-        schedule_v01.analytics(uploaded_file)
-        schedule_v01.analytics1(uploaded_file)
+            schedule_v01.analytics(uploaded_file)
+            schedule_v01.analytics1(uploaded_file)
     
     elif st.session_state.script_choice == "sh1":
         st.markdown("""
@@ -778,7 +776,7 @@ def main():
                             if not text:
                                 continue
                             matches = re.findall(r'((?:[A-Z0-9-]+-[^\n]+)\n.*?)(?=\n[A-Z0-9-]+-|$)', text, re.DOTALL)
-                            st.write(matches)
+                            # st.write(matches)
                             for match in matches:
                                 values = hap.extract_values(match)
                                 if values[0]:
