@@ -178,7 +178,7 @@ def get_LVG_Report(name):
         current_schedule = None
         current_type = None
         for i in range(len(df)):
-            row_values = df.iloc[i].astype(str).tolist()
+            row_values = [str(v) for v in df.iloc[i]]
             combined = " ".join(row_values)
             
             if "Schedule:" in combined:
