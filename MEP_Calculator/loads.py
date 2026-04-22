@@ -715,6 +715,7 @@ def get_LVC_Exterior_Surfaces(name):
             result.append(lvb_list)
 
         lvb_df = pd.DataFrame(result)
+        
 
         last_col = lvb_df.columns[-1]
         df = lvb_df[lvb_df[last_col].fillna("").isin(["QUICK", "DELAYED", ""])]
@@ -740,6 +741,17 @@ def get_LVC_Exterior_Surfaces(name):
         df3 = df_aligned.apply(merge_strings, axis=1)
         col_4_from_last = df3.columns[-4]
         df3[col_4_from_last] = df3[col_4_from_last].apply(lambda x: "" if (isinstance(x, str) and re.search(r"[a-zA-Z]", x)) else x)
+        valid_cols = [col for col in cols_to_merge if col in df_aligned2.columns]
+
+        if valid_cols:
+            df_aligned2['Surface'] = (
+                df_aligned2[valid_cols]
+                .fillna('')
+                .astype(str)
+                .agg(lambda x: ' '.join(x), axis=1)
+            )
+        else:
+            df_aligned2['Surface'] = ''
         df_aligned2 = df3.apply(right_align_row, axis=1, result_type='expand')
         cols_to_merge = df_aligned2.columns[:-5]
         df_aligned2['Surface'] = df_aligned2[cols_to_merge].astype(str).agg(' '.join, axis=1)
@@ -889,11 +901,11 @@ def getProcessLoads(database, proposed, baseline, sim90, sim180, sim270):
     # SAVE TEMP FILES
     # =====================================================
     def save_temp(uploaded_file):
-        uploaded_file.seek(0)
-        content = uploaded_file.read()
+        import tempfile
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
-            temp_file.write(content)
+            temp_file.write(uploaded_file.getvalue())  # ✅ KEY FIX
+            temp_file.flush()
             return temp_file.name
 
     temp_file_path_proposed = save_temp(proposed)
