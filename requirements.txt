@@ -13,3 +13,4 @@ fuzzywuzzy
 streamlit-card
 streamlit-lottie
 xlwings
+fpdf
