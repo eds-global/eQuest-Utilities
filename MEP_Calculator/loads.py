@@ -685,87 +685,106 @@ def merge_strings(row):
     return row
 
 def get_LVC_Exterior_Surfaces(name):
+    import pandas as pd
+    import re
+
     with open(name) as f:
         flist = f.readlines()
 
-        lvb_count = [] 
-        for num, line in enumerate(flist, 0):
+    # -------------------------------
+    # FIND SECTION
+    # -------------------------------
+    lvb_count = []
+    numend = None
 
-            if 'LV-C' in line:
-                lvb_count.append(num)
+    for num, line in enumerate(flist):
+        if 'LV-C' in line:
+            lvb_count.append(num)
+        if 'LV-D' in line:
+            numend = num
 
-            if 'LV-D' in line:
-                numend = num
+    if not lvb_count or numend is None:
+        return pd.DataFrame(columns=["Surface", "Multiplier", "Area(ft²)", "Construction",
+                                     "U-Value((BTU/HR-SQFT-F)", "Surface Type"])
 
-        numstart = lvb_count[0]
+    numstart = lvb_count[0]
+    lvb_rpt = flist[numstart:numend]
 
-        lvb_rpt = flist[numstart:numend]
+    # -------------------------------
+    # FILTER LINES
+    # -------------------------------
+    lvb_str = []
+    for line in lvb_rpt:
+        if ('.' in line and ('QUICK' in line or 'DELAYED' in line) and 'ADIABATIC' not in line):
+            lvb_str.append(line)
 
-        lvb_str = []
-        for line in lvb_rpt:
-            if ('.' in line and ('QUICK' in line or 'DELAYED' in line) and 'ADIABATIC' not in line):
-                lvb_str.append(line)
+    # -------------------------------
+    # BUILD DATA
+    # -------------------------------
+    result = []
+    for line in lvb_str:
+        splitter = line.split()
+        if len(splitter) < 7:
+            continue
 
-        result = []  
-        for line in lvb_str:
-            splitter = line.split()
-            space_name = " ".join(splitter[:-7])
-            lvb_list = splitter[-7:]
-            lvb_list.insert(0, space_name)
-            result.append(lvb_list)
+        space_name = " ".join(splitter[:-7])
+        values = splitter[-7:]
+        values.insert(0, space_name)
+        result.append(values)
 
-        lvb_df = pd.DataFrame(result)
-        
+    if not result:
+        return pd.DataFrame(columns=["Surface", "Multiplier", "Area(ft²)", "Construction",
+                                     "U-Value((BTU/HR-SQFT-F)", "Surface Type"])
 
-        last_col = lvb_df.columns[-1]
-        df = lvb_df[lvb_df[last_col].fillna("").isin(["QUICK", "DELAYED", ""])]
+    df = pd.DataFrame(result)
 
-        filtered = df[df.apply(lambda r: get_last_nonempty_value(r) in ["QUICK", "DELAYED"], axis=1)]
+    # -------------------------------
+    # ALIGN
+    # -------------------------------
+    def right_align_row(row):
+        row_values = list(row)
+        blanks = [v for v in row_values if pd.isna(v) or str(v).strip() == ""]
+        non_blanks = [v for v in row_values if not (pd.isna(v) or str(v).strip() == "")]
+        return blanks + non_blanks
 
-        df_aligned = filtered.apply(right_align_row, axis=1, result_type='expand')
+    df_aligned = df.apply(right_align_row, axis=1, result_type='expand')
 
-        df2 = df_aligned.copy()
+    # -------------------------------
+    # SAFE MERGE (THIS WAS CRASHING)
+    # -------------------------------
+    df_aligned2 = df_aligned.copy()
 
-        # Identify correct columns
-        global col_6_last, col_5_last, col_4_last, col_3_last, cols_to_check
+    cols_to_merge = df_aligned2.columns[:-5]  # ALWAYS DEFINE FIRST
 
-        col_6_last = df2.columns[-6]
-        col_5_last = df2.columns[-5]
-        col_4_last = df2.columns[-4]
-        col_3_last = df2.columns[-3]
+    valid_cols = [col for col in cols_to_merge if col in df_aligned2.columns]
 
-        cols_to_check = [col_6_last, col_5_last, col_4_last]
+    if valid_cols:
+        df_aligned2['Surface'] = (
+            df_aligned2[valid_cols]
+            .fillna('')
+            .astype(str)
+            .agg(lambda x: ' '.join(x), axis=1)
+        )
+    else:
+        df_aligned2['Surface'] = ''
 
-        df2 = df2.apply(merge_strings, axis=1)
-        df_aligned = df2.apply(right_align_row, axis=1, result_type='expand')
-        df3 = df_aligned.apply(merge_strings, axis=1)
-        col_4_from_last = df3.columns[-4]
-        df3[col_4_from_last] = df3[col_4_from_last].apply(lambda x: "" if (isinstance(x, str) and re.search(r"[a-zA-Z]", x)) else x)
-        valid_cols = [col for col in cols_to_merge if col in df_aligned2.columns]
+    # -------------------------------
+    # FINAL CLEAN
+    # -------------------------------
+    df_aligned2 = df_aligned2.drop(df_aligned2.columns[:3], axis=1, errors='ignore')
 
-        if valid_cols:
-            df_aligned2['Surface'] = (
-                df_aligned2[valid_cols]
-                .fillna('')
-                .astype(str)
-                .agg(lambda x: ' '.join(x), axis=1)
-            )
-        else:
-            df_aligned2['Surface'] = ''
-        df_aligned2 = df3.apply(right_align_row, axis=1, result_type='expand')
-        cols_to_merge = df_aligned2.columns[:-5]
-        df_aligned2['Surface'] = df_aligned2[cols_to_merge].astype(str).agg(' '.join, axis=1)
-        # df_aligned2 = df_aligned2.drop(columns=cols_to_merge)
-        df_aligned2 = df_aligned2.drop(df_aligned2.columns[:3], axis=1)
-        df_aligned2.columns = [
-            "Multiplier", "Area(ft²)", "Construction",
-            "U-Value((BTU/HR-SQFT-F)",
-            "Surface Type", "Surface"]
-        df_aligned2["Surface"] = df_aligned2["Surface"].str.lstrip()
-        surface_col = df_aligned2.pop("Surface")  # Remove the column
-        df_aligned2.insert(0, "Surface", surface_col)
-        
-        return df_aligned2
+    df_aligned2.columns = [
+        "Multiplier", "Area(ft²)", "Construction",
+        "U-Value((BTU/HR-SQFT-F)", "Surface Type", "Surface"
+    ]
+
+    df_aligned2["Surface"] = df_aligned2["Surface"].str.strip()
+
+    # Move Surface first
+    surface_col = df_aligned2.pop("Surface")
+    df_aligned2.insert(0, "Surface", surface_col)
+
+    return df_aligned2
 
 def get_LVB_Report(name):
     # st.write(name)
@@ -904,7 +923,7 @@ def getProcessLoads(database, proposed, baseline, sim90, sim180, sim270):
         import tempfile
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".sim") as temp_file:
-            temp_file.write(uploaded_file.getvalue())  # ✅ KEY FIX
+            temp_file.write(uploaded_file.getvalue())  # ✅ correct way
             temp_file.flush()
             return temp_file.name
 
