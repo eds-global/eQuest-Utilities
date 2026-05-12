@@ -209,7 +209,9 @@ def get_LVG_Report(name):
         df['Day Type'] = df['Day Type'].replace('', pd.NA) 
 
         # Forward fill
-        df['Day Type'] = df['Day Type'].fillna(method='ffill')
+        # df['Day Type'] = df['Day Type'].fillna(method='ffill')
+        df['Day Type'] = df['Day Type'].ffill()
+
         df = df.replace('', pd.NA)  # Convert empty strings to NA
         df = df.dropna()
 
