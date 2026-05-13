@@ -265,6 +265,7 @@ def main():
         if uploaded_file is not None:
             schedule_v01.analytics(uploaded_file)
             schedule_v01.analytics1(uploaded_file)
+            schedule_v01.get_schedule(uploaded_file)
     
     elif st.session_state.script_choice == "sh1":
         st.markdown("""

@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 from io import StringIO
 import re
+import traceback
 
 # Function to replace consecutive duplicates with &D
 def replace_consecutive_duplicates(values):
@@ -33,7 +34,11 @@ def format_line(text, max_width=80, indent=0):
 def getScheduleINP(data):
     output_content = StringIO(newline='\r\n')  # Use CRLF for Windows line endings
     try:
-        # Store index or markers to capture range of values
+        # Reset columns to integer index to avoid KeyError on row[0]
+        data = data.reset_index(drop=True)
+        data.columns = range(len(data.columns))
+
+        # Store index  markers
         idx1 = idx2 = idx3 = idx4 = None
 
         for index, row in data.iterrows():
@@ -49,21 +54,39 @@ def getScheduleINP(data):
             if idx1 is not None and idx2 is not None and idx3 is not None:
                 break
 
+        if idx1 is None:
+            st.error("Could not find 'Hour' marker in the file. Please check the Excel format.")
+            return
+        if idx2 is None:
+            st.error("Could not find 'Day' marker in the file. Please check the Excel format.")
+            return
+        if idx3 is None:
+            st.error("Could not find 'Month' marker in the file. Please check the Excel format.")
+            return
+        if idx4 is None:
+            st.error("Could not find 'Annual Schedule' marker in the file. Please check the Excel format.")
+            return
+
+        # Safe type_value extraction
+        type_value = str(data.iloc[0, 1]).upper() if pd.notnull(data.iloc[0, 1]) else "FRACTION"
+
         # Creating a new section called Day schedules
         output_content.write("$ ---------------------------------------------------------\n")
         output_content.write("$              Day Schedules\n")
         output_content.write("$ ---------------------------------------------------------\n\n")
 
-        # Extracting the 'Hour' row values from 2nd to 25th column
-        hour_values = data.loc[data.iloc[:, 0] == 'Hour'].iloc[0, 1:25].tolist()
-        formatted_hour_values = ', '.join(map(str, hour_values))
-        type_value = data.iloc[0, 1].upper()
+        # # Extracting the 'Hour' row values from 2nd to 25th column
+        # hour_values = data.loc[data.iloc[:, 0] == 'Hour'].iloc[0, 1:25].tolist()
+        # formatted_hour_values = ', '.join(map(str, hour_values))
+        # type_value = data.iloc[0, 1].upper()
 
         for index, row in data.iterrows():
             if row[0] == 'Week Schedule' or row[0] == 'Rows can be added to add more weekly schedule':
                 break
             if index > idx1:
                 schedule_name = row[0]
+                if not isinstance(schedule_name, str) or not schedule_name.strip():
+                    continue
                 row_values = row[1:25].tolist()
                 row_values = replace_consecutive_duplicates(row_values)
                 formatted_values = ', '.join(str(value) for value in row_values if pd.notnull(value))
@@ -79,17 +102,23 @@ def getScheduleINP(data):
         output_content.write("$              Week Schedules\n")
         output_content.write("$ ---------------------------------------------------------\n\n")
 
-        day_values = data.loc[data.iloc[:, 0] == 'Day'].iloc[0, 1:11].tolist()
-        formatted_day_values = ', '.join(map(str, day_values))
+        # day_values = data.loc[data.iloc[:, 0] == 'Day'].iloc[0, 1:11].tolist()
+        # formatted_day_values = ', '.join(map(str, day_values))
 
         for index, row in data.iterrows():
             if row[0] == 'Annual Schedule':
                 break
             if index > idx2 and index < idx4:
                 schedule_name = row[0]
+                if not isinstance(schedule_name, str) or not schedule_name.strip():
+                    continue
                 row_values = row[1:11].tolist()
                 row_values = replace_consecutive_duplicates(row_values)
-                formatted_day = ', '.join(f'"{value}"' if value != '&D' else value for value in row_values if pd.notnull(value))
+                # formatted_day = ', '.join(f'"{value}"' if value != '&D' else value for value in row_values if pd.notnull(value))
+                formatted_day = ', '.join(
+                    f'"{value}"' if value != '&D' else value
+                    for value in row_values if pd.notnull(value)
+                )
                 output_content.write(format_line(f'"{schedule_name}" = WEEK-SCHEDULE-PD\n'))
                 output_content.write(format_line(f"   TYPE             = {type_value}\n"))
                 output_content.write(format_line(f"   DAY-SCHEDULES    = ( {formatted_day} )\n"))
@@ -105,7 +134,11 @@ def getScheduleINP(data):
 
         for i, month_row_index in enumerate(month_indexes):
             month_values = data.iloc[month_row_index, 1:25].tolist()
-            formatted_values1 = ', '.join([str(x) for x in month_values if pd.notnull(x) and x != 'Columns can be added here till 8760'])
+            # formatted_values1 = ', '.join([str(x) for x in month_values if pd.notnull(x) and x != 'Columns can be added here till 8760'])
+            formatted_values1 = ', '.join([
+                str(x) for x in month_values
+                if pd.notnull(x) and x != 'Columns can be added here till 8760'
+            ])
 
             day_row_index = month_row_index + 1
             day_values = data.iloc[day_row_index, 1:25].tolist()
@@ -115,11 +148,18 @@ def getScheduleINP(data):
                 for schedule_row_index in range(day_row_index + 1, len(data)):
                     schedule_name = data.iloc[schedule_row_index, 0]
 
-                    if isinstance(schedule_name, str) and schedule_name.lower() in ["month", "day"]:
+                    # if isinstance(schedule_name, str) and schedule_name.lower() in ["month", "day"]:
+                    #     break
+                    if not isinstance(schedule_name, str) or not schedule_name.strip():
+                        continue
+                    if schedule_name.lower() in ["month", "day"]:
                         break
 
                     row_values = data.iloc[schedule_row_index, 1:25].tolist()
-                    formatted_days = ', '.join(f'"{value}"' for value in row_values if pd.notnull(value))
+                    # formatted_days = ', '.join(f'"{value}"' for value in row_values if pd.notnull(value))
+                    formatted_days = ', '.join(
+                        f'"{value}"' for value in row_values if pd.notnull(value)
+                    )
 
                     output_content.write(format_line(f'"{schedule_name}" = SCHEDULE-PD\n'))
                     output_content.write(format_line(f"   TYPE             = {type_value}\n"))
@@ -140,6 +180,7 @@ def getScheduleINP(data):
 
     except Exception as e:
         st.error(f"An error occurred while creating the new file: {e}")
+        st.code(traceback.format_exc())
 
 
 
