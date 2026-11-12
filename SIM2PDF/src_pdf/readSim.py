@@ -74,7 +74,10 @@ def get_report_as_pdf(report_content, folder_name, path):
     
     # Add content from the SIM report, starting a new page for each section starting with "REPORT"
     for line in report_lines:
-        if "RUN" in line and "RUN-" not in line:
+        # New page only on the DOE-2 page-header line ("... BDL RUN 1": RUN followed by a number at
+        # end of line). A bare "RUN" also appears in column headers (e.g. SS-R "100 RUN / + HOURS"),
+        # which must not trigger a page break.
+        if re.search(r"\bRUN\s+\d+\s*$", line) and "RUN-" not in line:
             pdf.add_page()  # Start a new page
         pdf.multi_cell(0, 4, line)  # Adjust spacing to 5
 
